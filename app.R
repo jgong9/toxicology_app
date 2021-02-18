@@ -6,6 +6,10 @@
 #
 #    http://shiny.rstudio.com/
 #
+# Created by Joonho Gong
+# Email : jgong9@ncsu.edu
+
+
 ## For Shiny and plots
 library(shiny)
 library(shinythemes)
