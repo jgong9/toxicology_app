@@ -118,8 +118,9 @@ se_for_CI_mle_fre_trans <- function(K_F_prime, n, C, sigma, cov_mat){
 #     return( -result_mat)
 # }
 
-## 3. Sips
-
+##############
+## 3. Sips ###
+############## 
 ## Original
 # negLogLikelihood_sips <- function(par, data_x, data_y) {
 #   
