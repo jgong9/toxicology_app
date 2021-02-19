@@ -266,9 +266,63 @@ se_for_CI_mle_sips_linear <- function(Q, K, n, C, sigma, cov_mat){
 
 
 ui <- navbarPage(
-        title = "Toxicant Analysis", 
+        title = strong("Toxicant Analysis"), 
         theme = shinytheme("flatly"),
        # shinythemes::themeSelector(),
+       tabPanel("Models",
+                fluidRow(
+                  column(
+                    br(),
+                    div( img(src="acs-logo.svg",width="169px",height="54px"),  align= "center"),
+                    p("For more information please see ",em("Wang et al. (2019)"),
+                      br(),
+                      a(href="https://pubs.acs.org/doi/10.1021/acsomega.9b02051", "Here",target="_blank",style = "color: blue;"),style="text-align:center;color:black"),
+                    br(),
+                    br(),
+                    br(),
+                    div(img(height = 50, width = 140, src = "tam_logo2.png"),
+                        strong("X"),
+                        img(height = 50, width = 140, src = "ncstate_logo.png"),
+                        align= "center"
+                    ),
+                    br(),
+                    div("This is a product of   ", 
+                        
+                        a(actionButton(inputId = "email1", label = "Joonho Gong", 
+                                       icon = icon("envelope", lib = "font-awesome"),
+                                       style="color: #0303FC; background-color: #EBEDEF; border-color: #DCDCDC"
+                        ),
+                        href="mailto:jgong9@ncsu.edu"),
+                        align= "center"
+                    ),
+                    width=3),
+                  
+                  
+                  column(
+                    
+                    br(),
+                    p( strong("1. Langmuir model"),
+                       withMathJax("$$ q = \\frac{Q_{max} K_{d} C}{1+K_{d} C }$$"),
+                       "Details about the model including what each parameter indicates.",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+                    br(),
+                    
+                    p( strong("2. Freundlich model"),
+                       withMathJax("$$ q = K_{F} \\cdot C^{\\frac{1}{n}} $$"),
+                       #   withMathJax("$$ q = \\frac{Q_{max} K_{d} C}{1+K_{d} C }$$"),
+                       
+                       "Details about the model including what each parameter indicates.",
+                       style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"),
+                    br(),
+                    p(strong("3. Sips model"),
+                      withMathJax("$$ q = \\frac{Q_{max} K_{d} C^{\\frac{1}{n}} }{1+K_{d} C^{\\frac{1}{n}} },$$
+                                   \n where \\( 0 < \\frac{1}{n}\\le 1 \\)."),
+                      '\n',
+                      "Details about the model including what the parameters indicate.",
+                      style="text-align:justify;color:black;background-color:#DFFEF7;padding:15px;border-radius:10px"),
+                    width=8)
+                  
+                )
+       ), ## end of tab 1
         tabPanel("Plot",
                  sidebarLayout(
                      sidebarPanel(
@@ -306,23 +360,23 @@ ui <- navbarPage(
                          br(),
                          br(),
                          br(),
-                         #  img(src = "TAM_logo.png", height = 70, width = 200),
-                         br(),
+                         br()
                          
-                         div(img(height = 30, width = 100, src = "tam_logo2.png"),
-                             "X",
-                             img(height = 30, width = 100, src = "ncstate_logo.png"),
-                             align= "center"
-                         ),
-                         div("This is a product of ", 
-        
-                             a(actionButton(inputId = "email1", label = "Joonho Gong", 
-                                            icon = icon("envelope", lib = "font-awesome"),
-                                            style="color: #0303FC; background-color: #EBEDEF; border-color: #DCDCDC"
-                                            ),
-                               href="mailto:jgong9@ncsu.edu"),
-                             align= "center"
-                         )
+                        #  div(img(height = 30, width = 100, src = "tam_logo2.png"),
+                        #      "X",
+                        #      img(height = 30, width = 100, src = "ncstate_logo.png"),
+                        #      align= "center"
+                        #  ),
+                        # br(),
+                        #  div("This is a product of ", 
+                        # 
+                        #      a(actionButton(inputId = "email1", label = "Joonho Gong", 
+                        #                     icon = icon("envelope", lib = "font-awesome"),
+                        #                     style="color: #0303FC; background-color: #EBEDEF; border-color: #DCDCDC"
+                        #                     ),
+                        #        href="mailto:jgong9@ncsu.edu"),
+                        #      align= "center"
+                        #  )
                      ),
                      mainPanel(
                                 h4("1. Langmuir Model"),
@@ -405,14 +459,12 @@ ui <- navbarPage(
                                 tableOutput("hessian_num_original_inverse_sips_trans"),
                                 )  # end of mainpanel
                      ) # end of sidebar layout
-        ), ## end of tab 1
+        ), ## end of tab 2
+
+   
 
         tabPanel("Data",
                  dataTableOutput("table")
-                 
-        ), ## end of tab 2
-
-        tabPanel("Test",
         ), ## end of tab 3  
 
         navbarMenu("More",
