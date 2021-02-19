@@ -335,7 +335,9 @@ ui <- navbarPage(
                                          "Data ID of Glyphosate:",
                                          min = 1,
                                          max = 8,
-                                         value = 8),
+                                         value = 1,
+                                         step=1,
+                                         round =T),
                          ),
                          conditionalPanel(
                              condition = "input.main=='Paraquat'",
@@ -343,7 +345,9 @@ ui <- navbarPage(
                                          "Data ID of Paraquat:",
                                          min = 9,
                                          max = 12,
-                                         value = 4),
+                                         value = 9,
+                                         step=1,
+                                         round=T),
                          ),
                          
                          selectizeInput('Rfunction', 'Choose your R optimization function', c("nlm", "optim")
