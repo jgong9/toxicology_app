@@ -265,11 +265,15 @@ se_for_CI_mle_sips_linear <- function(Q, K, n, C, sigma, cov_mat){
 
 
 
-ui <- navbarPage(
-        title = strong("Toxicant Analysis"), 
+ui <- tagList(
+ # tags$head(HTML("<title>Toxicant Analysis</title>")),
+  tags$head(HTML("<title>Toxicology</title> <link rel='icon' type=image/gif/png href='warning.png'>")),
+  
+  navbarPage(
+        title = span("Toxicant Analysis", style="font-weight: bold; font-weight: 900;"), 
         theme = shinytheme("flatly"),
        # shinythemes::themeSelector(),
-       tabPanel("Models",
+       tabPanel("Model",
                 fluidRow(
                   column(
                     br(),
@@ -299,26 +303,25 @@ ui <- navbarPage(
                   
                   
                   column(
-                    
-                    br(),
+                    h4(strong("Isotherm Models")),
                     p( strong("1. Langmuir model"),
                        withMathJax("$$ q = \\frac{Q_{max} K_{d} C}{1+K_{d} C }$$"),
-                       "Details about the model including what each parameter indicates.",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+                       "Details about the model including what each parameter means",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
                     br(),
                     
                     p( strong("2. Freundlich model"),
                        withMathJax("$$ q = K_{F} \\cdot C^{\\frac{1}{n}} $$"),
                        #   withMathJax("$$ q = \\frac{Q_{max} K_{d} C}{1+K_{d} C }$$"),
                        
-                       "Details about the model including what each parameter indicates.",
+                       "Details about the model including what each parameter means",
                        style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"),
                     br(),
-                    p(strong("3. Sips model"),
-                      withMathJax("$$ q = \\frac{Q_{max} K_{d} C^{\\frac{1}{n}} }{1+K_{d} C^{\\frac{1}{n}} },$$
-                                   \n where \\( 0 < \\frac{1}{n}\\le 1 \\)."),
-                      '\n',
-                      "Details about the model including what the parameters indicate.",
-                      style="text-align:justify;color:black;background-color:#DFFEF7;padding:15px;border-radius:10px"),
+                    # p(strong("3. Sips model"),
+                    #   withMathJax("$$ q = \\frac{Q_{max} K_{d} C^{\\frac{1}{n}} }{1+K_{d} C^{\\frac{1}{n}} },$$
+                    #                \n where \\( 0 < \\frac{1}{n}\\le 1 \\)."),
+                    #   '\n',
+                    #   "Details about the model including what the parameters indicate.",
+                    #   style="text-align:justify;color:black;background-color:#DFFEF7;padding:15px;border-radius:10px"),
                     width=8)
                   
                 )
@@ -383,7 +386,7 @@ ui <- navbarPage(
                         #  )
                      ),
                      mainPanel(
-                                h4("1. Langmuir Model"),
+                                h3(strong("1. Langmuir Model")),
                                 h4("1-1. Non-transformed OLS vs Transformed MLE"),
                                 plotOutput("trajectoryPlot"),
                                 withMathJax("For MLE, we assume \n
@@ -394,21 +397,23 @@ ui <- navbarPage(
                                 br(),
                                 h4("1-2. MLE summary of Langmuir"),
                                 tableOutput("mle_table"),
+                        
+                                h4("1-3. AIC of Langmuir"),
+                                verbatimTextOutput("aic_lan"),
+                                # h4("1-3. Numerical Hessian of MLE and its invserse of Langmuir"),
+                                # fluidRow(
+                                #   column(6,
+                                #          "a. Numerical Hessian of MLE",
+                                #          tableOutput("hessian_num_original")
+                                #         ),
+                                #   column(6,
+                                #          "b. Inverse of Hessian of MLE",
+                                #          tableOutput("hessian_num_original_inverse")
+                                #          )
+                                #  ), # end of fluidRow
                                 br(),
-                                h4("1-3. Numerical Hessian of MLE and its invserse of Langmuir"),
-                                fluidRow(
-                                  column(6,
-                                         "a. Numerical Hessian of MLE",
-                                         tableOutput("hessian_num_original")
-                                        ),
-                                  column(6,
-                                         "b. Inverse of Hessian of MLE",
-                                         tableOutput("hessian_num_original_inverse")
-                                         )
-                                  ), # end of fluidRow
                                 br(),
-                                br(),
-                                h4("2. Freundlich vs Langmuir"),
+                                h3(strong("2. Freundlich vs Langmuir")),
                                 h4("2-1. Trajectory plot"),
                                 plotOutput("plot_fre"),
                                 withMathJax("For MLE, we assume \n
@@ -419,48 +424,49 @@ ui <- navbarPage(
                                 br(),
                                 h4("2-2. MLE summary of Freundlich"),
                                 tableOutput("mle_table_fre"),
-                                br(),
-                                h4("2-3. Numerical Hessian of MLE and its invserse of Freundlich"),
-                                fluidRow(
-                                  column(6,
-                                         "a. Numerical Hessian of MLE",
-                                         tableOutput("hessian_num_original_fre")
-                                  ),
-                                  column(6,
-                                         "b. Inverse of Hessian of MLE",
-                                         tableOutput("hessian_num_original_inverse_fre")
-                                  )
-                                ), # end of fluidRow
-                                br(),
-                                br(),
-                                h4("3. Sips vs Langmuir"),
-                                h4("3-1. Non-transformed OLS vs Transformed MLE"),
-                                plotOutput("plot_sips"),
-                                withMathJax("For MLE, we assume \n
-                                     $$ q = \\frac{Q_{max} \\cdot \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{n}} }{(1+ \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{n}} )} + \\varepsilon, $$
-                                     \n where \\(K = \\exp(K^{\\prime})\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
-                                     \n"),
+                                h4("2-3. AIC of Freundlich"),
+                                verbatimTextOutput("aic_fre"),
+                                # h4("2-3. Numerical Hessian of MLE and its invserse of Freundlich"),
+                                # fluidRow(
+                                #   column(6,
+                                #          "a. Numerical Hessian of MLE",
+                                #          tableOutput("hessian_num_original_fre")
+                                #   ),
+                                #   column(6,
+                                #          "b. Inverse of Hessian of MLE",
+                                #          tableOutput("hessian_num_original_inverse_fre")
+                                #   )
+                                # ), # end of fluidRow
                                 br(),
                                 br(),
-                                h4("3-2. MLE summary of Sips"),
-                                tableOutput("mle_table_sips"),
-                                br(),
-                                h4("3-3. Inverse of numerical Hessian of Sips"),
-                                tableOutput("hessian_num_original_inverse_sips"),
-                                br(),
-                                h4("3-4. Transformed Sips"),
-                                plotOutput("plot_sips_trans"),
-                                withMathJax("For MLE, we assume \n
-                                     $$ q = \\frac{Q_{max} \\cdot \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{1+\\exp{n^{\\prime} } }} }{(1+ \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{1+\\exp{n^{\\prime} } }} )} + \\varepsilon, $$
-                                     \n where \\(K = \\exp(K^{\\prime})\\), \\(n= 1+ \\exp{n^{\\prime}}\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
-                                     \n"),
-                                br(),
-                                br(),
-                                h4("3-5 MLE summary of Transformed Sips"),
-                                tableOutput("mle_table_sips_trans"),
-                                br(),
-                                h4("3-6. Inverse of numerical Hessian of Transformed Sips"),
-                                tableOutput("hessian_num_original_inverse_sips_trans"),
+                                # h4("3. Sips vs Langmuir"),
+                                # h4("3-1. Non-transformed OLS vs Transformed MLE"),
+                                # plotOutput("plot_sips"),
+                                # withMathJax("For MLE, we assume \n
+                                #      $$ q = \\frac{Q_{max} \\cdot \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{n}} }{(1+ \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{n}} )} + \\varepsilon, $$
+                                #      \n where \\(K = \\exp(K^{\\prime})\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
+                                #      \n"),
+                                # br(),
+                                # br(),
+                                # h4("3-2. MLE summary of Sips"),
+                                # tableOutput("mle_table_sips"),
+                                # br(),
+                                # h4("3-3. Inverse of numerical Hessian of Sips"),
+                                # tableOutput("hessian_num_original_inverse_sips"),
+                                # br(),
+                                # h4("3-4. Transformed Sips"),
+                                # plotOutput("plot_sips_trans"),
+                                # withMathJax("For MLE, we assume \n
+                                #      $$ q = \\frac{Q_{max} \\cdot \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{1+\\exp{n^{\\prime} } }} }{(1+ \\exp{K^{\\prime}} \\cdot C^{\\frac{1}{1+\\exp{n^{\\prime} } }} )} + \\varepsilon, $$
+                                #      \n where \\(K = \\exp(K^{\\prime})\\), \\(n= 1+ \\exp{n^{\\prime}}\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
+                                #      \n"),
+                                # br(),
+                                # br(),
+                                # h4("3-5 MLE summary of Transformed Sips"),
+                                # tableOutput("mle_table_sips_trans"),
+                                # br(),
+                                # h4("3-6. Inverse of numerical Hessian of Transformed Sips"),
+                                # tableOutput("hessian_num_original_inverse_sips_trans"),
                                 )  # end of mainpanel
                      ) # end of sidebar layout
         ), ## end of tab 2
@@ -478,8 +484,9 @@ ui <- navbarPage(
                 tabPanel("About",
                 )
         ) ## end of tab 4
-    ) # end of navbarPage
 
+    ) # end of navbarPage
+) # end of tagList
 
 
 
@@ -811,6 +818,7 @@ server <- function(input, output) {
                  coef_mle[3] - conf_val * std_error3 )
       
       
+
       table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
                                  Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
       
@@ -819,9 +827,7 @@ server <- function(input, output) {
     bordered=T)
     
     
-    
-    
-    output$hessian_num_original <- renderTable({
+    output$aic_lan <- renderText({
       value <- inputVar()
       
       kth <- as.numeric(value[1])
@@ -885,7 +891,7 @@ server <- function(input, output) {
       
       initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
                               sqrt(sigma2_initial))
-
+      
       
       if(value[4] == "optim"){
         fit_mle <- optim(fn = negLogLikelihood,
@@ -900,6 +906,8 @@ server <- function(input, output) {
         fit_mle <- nlm(f = negLogLikelihood,
                        p = initial_value_mle,
                        hessian = T,
+                       #    ndigit = 20,
+                       #    method = "CG",
                        data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
         )
         
@@ -908,127 +916,230 @@ server <- function(input, output) {
       }
       
       
-    
+      
+      
       Q_est_mle <- coef_mle[1]
       K_est_mle <- exp( coef_mle[2] )
       sigma_est_mle <- coef_mle[3]
+      
 
       
-      fit_mle$hessian
+      AIC_lan <- 2 * length(coef_mle) + negLogLikelihood(coef_mle, data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2]))
       
-      
-      
-    },
-    colnames = F,
-    digits=-2,
-    bordered =T
-    )
+      paste("AIC of Langmuir model is ", AIC_lan)
+          
+      })
     
     
     
-    
-    
-    
-    
-    output$hessian_num_original_inverse <- renderTable({
-      value <- inputVar()
-      
-      kth <- as.numeric(value[1])
-      
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-      
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-      
-      
-      ### 0. Commerical product
-      Q_com <- initial_values[[1]]
-      K_com <- initial_values[[2]]
-      
-      x_com_vec <- x_matrix[kth,]
-      Y_com_pred <- (Q_com * K_com * x_com_vec) / (1 + K_com * x_com_vec)
-      
-      mse_0 <- sum( (data_kth[,2] - Y_com_pred )^2 ) / n_data_kth
-      
-      ### 1. Original fit
-      fit_nonBoot <- nlsLM(q.mol.kg ~ Qmax.mol.kg * Kd.l.mol * Cw.mol.l / (1 + Kd.l.mol*Cw.mol.l),
-                           data=data_kth,
-                           start=list(Qmax.mol.kg = initial_values[[1]],
-                                      Kd.l.mol = initial_values[[2]]))
-      
-      est_curve_origin <- predict(fit_nonBoot, list( Cw.mol.l=x_matrix[kth,] ) )
-      max_y <- max( est_curve_origin )
-      summary_1 <-summary(fit_nonBoot)
-      
-      mse_1 <- sum( (summary_1$residuals)^2 ) / n_data_kth
-      
-      
-      ### 2. Linear model
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-      
-      data_trans <- data.frame(q.mol.kg = Y_trans, 
-                               Cw.mol.l = X_trans)
-      
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
-      
-      x_vec <- 1 / x_matrix[kth,-1]
-      Y_trans_pred <- predict(fit_lm, list(Cw.mol.l = x_vec  ))
-      Y_original_pred <- 1/ Y_trans_pred
-      
-      # Compute rse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-      
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-      
-      ### 3. MLE
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      
-      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
-                              sqrt(sigma2_initial))
-
-      
-      if(value[4] == "optim"){
-        fit_mle <- optim(fn = negLogLikelihood,
-                         par = initial_value_mle,
-                         hessian = T,
-                         method = value[5],
-                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle <- fit_mle$par
-        
-      } else if(value[4] == "nlm"){
-        fit_mle <- nlm(f = negLogLikelihood,
-                       p = initial_value_mle,
-                       hessian = T,
-                       data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        
-        coef_mle <- fit_mle$estimate
-        
-      }
-      
-      
-   
-      Q_est_mle <- coef_mle[1]
-      K_est_mle <- exp( coef_mle[2] )
-      sigma_est_mle <- coef_mle[3]
-
-      solve(fit_mle$hessian)
-      
-    },
-    colnames = F,
-    digits=-2,
-    bordered = T
-    )
+    # output$hessian_num_original <- renderTable({
+    #   value <- inputVar()
+    #   
+    #   kth <- as.numeric(value[1])
+    #   
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    #   
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    #   
+    #   
+    #   ### 0. Commerical product
+    #   Q_com <- initial_values[[1]]
+    #   K_com <- initial_values[[2]]
+    #   
+    #   x_com_vec <- x_matrix[kth,]
+    #   Y_com_pred <- (Q_com * K_com * x_com_vec) / (1 + K_com * x_com_vec)
+    #   
+    #   mse_0 <- sum( (data_kth[,2] - Y_com_pred )^2 ) / n_data_kth
+    #   
+    #   ### 1. Original fit
+    #   fit_nonBoot <- nlsLM(q.mol.kg ~ Qmax.mol.kg * Kd.l.mol * Cw.mol.l / (1 + Kd.l.mol*Cw.mol.l),
+    #                        data=data_kth,
+    #                        start=list(Qmax.mol.kg = initial_values[[1]],
+    #                                   Kd.l.mol = initial_values[[2]]))
+    #   
+    #   est_curve_origin <- predict(fit_nonBoot, list( Cw.mol.l=x_matrix[kth,] ) )
+    #   max_y <- max( est_curve_origin )
+    #   summary_1 <-summary(fit_nonBoot)
+    #   
+    #   mse_1 <- sum( (summary_1$residuals)^2 ) / n_data_kth
+    #   
+    #   
+    #   ### 2. Linear model
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    #   
+    #   data_trans <- data.frame(q.mol.kg = Y_trans, 
+    #                            Cw.mol.l = X_trans)
+    #   
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+    #   
+    #   x_vec <- 1 / x_matrix[kth,-1]
+    #   Y_trans_pred <- predict(fit_lm, list(Cw.mol.l = x_vec  ))
+    #   Y_original_pred <- 1/ Y_trans_pred
+    #   
+    #   # Compute rse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    #   
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    #   
+    #   ### 3. MLE
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   
+    #   initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+    #                           sqrt(sigma2_initial))
+    # 
+    #   
+    #   if(value[4] == "optim"){
+    #     fit_mle <- optim(fn = negLogLikelihood,
+    #                      par = initial_value_mle,
+    #                      hessian = T,
+    #                      method = value[5],
+    #                      data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle <- fit_mle$par
+    #     
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle <- nlm(f = negLogLikelihood,
+    #                    p = initial_value_mle,
+    #                    hessian = T,
+    #                    data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     
+    #     coef_mle <- fit_mle$estimate
+    #     
+    #   }
+    #   
+    #   
+    # 
+    #   Q_est_mle <- coef_mle[1]
+    #   K_est_mle <- exp( coef_mle[2] )
+    #   sigma_est_mle <- coef_mle[3]
+    # 
+    #   
+    #   fit_mle$hessian
+    #   
+    #   
+    #   
+    # },
+    # colnames = F,
+    # digits=-2,
+    # bordered =T
+    # )
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # output$hessian_num_original_inverse <- renderTable({
+    #   value <- inputVar()
+    #   
+    #   kth <- as.numeric(value[1])
+    #   
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    #   
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    #   
+    #   
+    #   ### 0. Commerical product
+    #   Q_com <- initial_values[[1]]
+    #   K_com <- initial_values[[2]]
+    #   
+    #   x_com_vec <- x_matrix[kth,]
+    #   Y_com_pred <- (Q_com * K_com * x_com_vec) / (1 + K_com * x_com_vec)
+    #   
+    #   mse_0 <- sum( (data_kth[,2] - Y_com_pred )^2 ) / n_data_kth
+    #   
+    #   ### 1. Original fit
+    #   fit_nonBoot <- nlsLM(q.mol.kg ~ Qmax.mol.kg * Kd.l.mol * Cw.mol.l / (1 + Kd.l.mol*Cw.mol.l),
+    #                        data=data_kth,
+    #                        start=list(Qmax.mol.kg = initial_values[[1]],
+    #                                   Kd.l.mol = initial_values[[2]]))
+    #   
+    #   est_curve_origin <- predict(fit_nonBoot, list( Cw.mol.l=x_matrix[kth,] ) )
+    #   max_y <- max( est_curve_origin )
+    #   summary_1 <-summary(fit_nonBoot)
+    #   
+    #   mse_1 <- sum( (summary_1$residuals)^2 ) / n_data_kth
+    #   
+    #   
+    #   ### 2. Linear model
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    #   
+    #   data_trans <- data.frame(q.mol.kg = Y_trans, 
+    #                            Cw.mol.l = X_trans)
+    #   
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+    #   
+    #   x_vec <- 1 / x_matrix[kth,-1]
+    #   Y_trans_pred <- predict(fit_lm, list(Cw.mol.l = x_vec  ))
+    #   Y_original_pred <- 1/ Y_trans_pred
+    #   
+    #   # Compute rse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    #   
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    #   
+    #   ### 3. MLE
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   
+    #   initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+    #                           sqrt(sigma2_initial))
+    # 
+    #   
+    #   if(value[4] == "optim"){
+    #     fit_mle <- optim(fn = negLogLikelihood,
+    #                      par = initial_value_mle,
+    #                      hessian = T,
+    #                      method = value[5],
+    #                      data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle <- fit_mle$par
+    #     
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle <- nlm(f = negLogLikelihood,
+    #                    p = initial_value_mle,
+    #                    hessian = T,
+    #                    data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     
+    #     coef_mle <- fit_mle$estimate
+    #     
+    #   }
+    #   
+    #   
+    # 
+    #   Q_est_mle <- coef_mle[1]
+    #   K_est_mle <- exp( coef_mle[2] )
+    #   sigma_est_mle <- coef_mle[3]
+    # 
+    #   solve(fit_mle$hessian)
+    #   
+    # },
+    # colnames = F,
+    # digits=-2,
+    # bordered = T
+    # )
     
 ###################################################################
 #### Model 2. Freundlich
@@ -1495,90 +1606,7 @@ server <- function(input, output) {
     bordered=T)
     
     
-    
-    
-    output$hessian_num_original_fre <- renderTable({
-      value <- inputVar()
-      
-
-      kth <- as.numeric(value[1])
-      
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-      
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-      
-      
-      ### 0. Commerical product
-      
-      
-      ### 2. Freundlich model
-      ## 2-1 initial value
-      Y_trans <-  log(data_kth[-1,2] )
-      X_trans <- log(data_kth[-1,1] )
-      
-      data_trans <- data.frame(q.mol.kg = Y_trans, 
-                               Cw.mol.l = X_trans)
-      
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      K_F_est_lm <- exp( coef_lm[1] )
-      n_est_lm <- ( 1 / coef_lm[2] ) 
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-      
-      
-      res_lm <- data_kth[-1,2] - exp(fitted_values_lm)
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      
-      ## 2-2. MLE
-      initial_value_mle <- c( K_F_est_lm, n_est_lm, sqrt(sigma2_initial))
-      
-      
-      # 2-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle <- optim(fn = negLogLikelihood_fre,
-                         par = initial_value_mle,
-                         hessian = T,
-                         method = value[5],
-                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle <- fit_mle$par
-        
-      } else if(value[4] == "nlm"){
-        fit_mle <- nlm(f = negLogLikelihood_fre,
-                       p = initial_value_mle,
-                       hessian = T,
-                       data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        
-        coef_mle <- fit_mle$estimate
-        
-      }
-      
-      
-
-      
-      fit_mle$hessian
-      
-      
-      
-    },
-    colnames = F,
-    digits=-2,
-    bordered =T
-    )
-    
-    
-    
-    
-    
-    
-    
-    output$hessian_num_original_inverse_fre <- renderTable({
+    output$aic_fre <- renderText({
       value <- inputVar()
       
       kth <- as.numeric(value[1])
@@ -1614,13 +1642,15 @@ server <- function(input, output) {
       res_lm <- data_kth[-1,2] - exp(fitted_values_lm)
       sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
       
-      ## 2-2. MLE
-      initial_value_mle <- c( K_F_est_lm, n_est_lm, sqrt(sigma2_initial))
+      
+      
+      # 2-2. MLE
+      initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
       
       
       # 2-2 fit a new model of reparameterization for Kd
       if(value[4] == "optim"){
-        fit_mle <- optim(fn = negLogLikelihood_fre,
+        fit_mle <- optim(fn = negLogLikelihood_fre_trans,
                          par = initial_value_mle,
                          hessian = T,
                          method = value[5],
@@ -1629,7 +1659,7 @@ server <- function(input, output) {
         coef_mle <- fit_mle$par
         
       } else if(value[4] == "nlm"){
-        fit_mle <- nlm(f = negLogLikelihood_fre,
+        fit_mle <- nlm(f = negLogLikelihood_fre_trans,
                        p = initial_value_mle,
                        hessian = T,
                        data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
@@ -1638,81 +1668,44 @@ server <- function(input, output) {
         coef_mle <- fit_mle$estimate
         
       }
-
       
-      solve(fit_mle$hessian)
       
-    },
-    colnames = F,
-    digits=-2,
-    bordered = T
-    )
-    
-    
-    
-    
-    ###################################################################
-    #### Model 3. Sips
-    
-    
-    
-    ### Trans
-    output$plot_sips_trans <- renderPlot({
-      value <- inputVar()
-
-
-      kth <- as.numeric(value[1])
-
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-
-
-      ### 0. Commerical product
-      Q_com <- initial_values[[1]]
-      K_com <- initial_values[[2]]
-
-      x_com_vec <- x_matrix[kth,]
-      Y_com_pred <- (Q_com * K_com * x_com_vec) / (1 + K_com * x_com_vec)
-
-      mse_0 <- sum( (data_kth[,2] - Y_com_pred )^2 ) / n_data_kth
-
-
-      ### 2. Linear model
+      
+      K_F_prime_est_mle_fre <- coef_mle[1]
+      K_F_est_mle_fre <- exp(coef_mle[1])
+      
+      n_est_mle_fre <- coef_mle[2]
+      sigma_est_mle <- coef_mle[3]
+      
+      
+      ### Langmuir
       Y_trans <-  (1 / data_kth[-1,2] )
       X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
+      
+      data_trans <- data.frame(q.mol.kg = Y_trans, 
                                Cw.mol.l = X_trans)
-
+      
       fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
       coef_lm <- fit_lm$coefficients
       Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
+      K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+      
       x_vec <- 1 / x_matrix[kth,-1]
       Y_trans_pred <- predict(fit_lm, list(Cw.mol.l = x_vec  ))
       Y_original_pred <- 1/ Y_trans_pred
-
+      
       # Compute mse
       fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
+      
       res_lm <- data_kth[-1,2] - 1/fitted_values_lm
       mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      ### 3. MLE
+      
       # 3-1 initial values from the previous linear model
       sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
+      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
                               sqrt(sigma2_initial))
-
-
+      
+      
       # 3-2 fit a new model of reparameterization for Kd
       if(value[4] == "optim"){
         fit_mle_lan <- optim(fn = negLogLikelihood,
@@ -1722,1002 +1715,1257 @@ server <- function(input, output) {
                              data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
         )
         coef_mle_lan <- fit_mle_lan$par
-
+        
       } else if(value[4] == "nlm"){
         fit_mle_lan <- nlm(f = negLogLikelihood,
                            p = initial_value_mle,
                            hessian = T,
                            data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
         )
-
+        
         coef_mle_lan <- fit_mle_lan$estimate
-
+        
       }
 
-      # 3-3 get estimates
-      Q_est_mle_lan <- coef_mle_lan[1]
-      K_est_mle_lan <- exp( coef_mle_lan[2] )
-      sigma_est_mle_lan <- coef_mle_lan[3]
-
-      # 3-4 prepare for plotting
-
-      Y_original_pred_mle_lan <- ( coef_mle_lan[1] * exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]) ) / (1 + exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]))
-      res_mle_lan <- data_kth[,2] - Y_original_pred_mle_lan
-      mse_lan <- (sum(res_mle_lan^(2)) ) / (n_data_kth  )
-      # compute mse
-
-
-      fitted_values_mle_lan <-  ( coef_mle_lan[1] * exp(coef_mle_lan[2]) *  x_matrix[kth, ]) / (1 + exp(coef_mle_lan[2]) * x_matrix[kth, ])
-      # fitted values based on mle for plotting
-
-
-      # 3-5 MLE Confidence band
-      if( input$conf_level == "95%"){
-        conf_val <- qnorm(0.975)
-      } else if( input$conf_level == "90%"){
-        conf_val <- qnorm(0.95)
-      }  else if (input$conf_level == "80%"){
-        conf_val<- qnorm(0.90)
-      } else if(input$conf_level == "99%"){
-        conf_val<- qnorm(0.995)
-      }
-
-      Cov_est_lan <- solve(fit_mle_lan$hessian)
-      c_pred_vec <- x_matrix[kth, ]
-
-      mle_band_upper_lan <- rep(NA, length(c_pred_vec))
-      mle_band_lower_lan <- rep(NA, length(c_pred_vec))
-
-      for(i in 1:length(c_pred_vec)){
-        c_now <- c_pred_vec[i]
-        se_est <- se_for_CI_mle(Q = Q_est_mle_lan, K_new=coef_mle_lan[2], C=c_now,
-                                sigma = sigma_est_mle_lan, cov_mat=Cov_est_lan
-        )
-
-        term <- conf_val * se_est
-        mle_band_upper_lan[i] <- fitted_values_mle_lan[i] + term
-        mle_band_lower_lan[i] <- fitted_values_mle_lan[i] - term
-      }
-
-
-
-
-
-
-
-
-
-
-      ### Sips model
-      ## 1. initial value
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
-                               Cw.mol.l = X_trans)
-
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
-      # Compute mse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      ### 2. MLE
-      # 2-1 initial values from the previous linear model
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
-                              1,
-                              sqrt(sigma2_initial))
-
-      # 3-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle_sips <- optim(fn = negLogLikelihood_sips_trans,
-                              par = initial_value_mle,
-                              hessian = T,
-                              method = value[5],
-                              data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle_sips <- fit_mle_sips$par
-
-      } else if(value[4] == "nlm"){
-        fit_mle_sips <- nlm(f = negLogLikelihood_sips_trans,
-                            p = initial_value_mle,
-                            hessian = T,
-                            data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-
-        coef_mle_sips <- fit_mle_sips$estimate
-
-      }
-
-      # 3-3 get estimates
-      Q_est_mle_sips <- coef_mle_sips[1]
-      K_est_mle_sips <- exp( coef_mle_sips[2] )
-      n_est_mle_sips <- 1 + exp( coef_mle_sips[3] )
-      # n_est_mle_sips <- exp( coef_mle_sips[3] )
-      ## without 1+
-      sigma_est_mle_sips <- coef_mle_sips[4]
-
-      # 3-4 prepare for plotting
-
-      Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (1+exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (1+exp(coef_mle_sips[3]) )  ) )
-      # Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (exp(coef_mle_sips[3]) )  ) )
-      ## without 1+
-      res_mle_sips <- data_kth[,2] - Y_original_pred_mle_sips
-      mse_sips <- (sum(res_mle_sips^(2)) ) / (n_data_kth  )
-      # compute mse
-
-
-      fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(1/ (1+exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(1/ (1+exp(coef_mle_sips[3]) )  )  )
-      # fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(1/ (exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(1/ (exp(coef_mle_sips[3]) )  )  )
-      ## without 1+
-      # fitted values based on mle for plotting
-
-
-      # 3-5 MLE Confidence band
-      if( input$conf_level == "95%"){
-        conf_val <- qnorm(0.975)
-      } else if( input$conf_level == "90%"){
-        conf_val <- qnorm(0.95)
-      }  else if (input$conf_level == "80%"){
-        conf_val<- qnorm(0.90)
-      } else if(input$conf_level == "99%"){
-        conf_val<- qnorm(0.995)
-      }
-
-      Cov_est_sips <- solve(fit_mle_sips$hessian)
-      c_pred_vec <- x_matrix[kth, ]
-
-      mle_band_upper_sips <- rep(NA, length(c_pred_vec))
-      mle_band_lower_sips <- rep(NA, length(c_pred_vec))
-
-      for(i in 1:length(c_pred_vec)){
-        c_now <- c_pred_vec[i]
-        se_est <- se_for_CI_mle_sips_trans(Q = Q_est_mle_sips, K_new=coef_mle_sips[2],
-                                     n_new=coef_mle_sips[3], C=c_now,
-                                     sigma = sigma_est_mle_sips, cov_mat=Cov_est_sips
-        )
-
-        term <- conf_val * se_est
-        mle_band_upper_sips[i] <- fitted_values_mle_sips[i] + term
-        mle_band_lower_sips[i] <- fitted_values_mle_sips[i] - term
-      }
-
-
-
-
-
-      ### 4. Plot
-      max_val <- max(mle_band_upper_sips, na.rm = T)
-      max_final <- max(c(unlist(data_kth[-1,2]), max_val, mle_band_upper_lan ))
-
-      # main plot
-      plot(x_matrix[kth, ], fitted_values_mle_sips, type='l', xlab = 'Cw.mol.l', ylab = 'q.mol.kg',
-           ylim = c(0, max_final ), lwd = 2, col= 'blue',
-           main=paste( value[2], ", Data ID: ", value[1]))
-
-
-      # Confidence band
-      lines(c_pred_vec, mle_band_upper_sips, col="blue", lty=3, lwd=2)
-      lines(c_pred_vec, mle_band_lower_sips, col="blue", lty=3, lwd=2)
-
-
-      lines(c_pred_vec, fitted_values_mle_lan, col="red", lty=1, lwd=2)
-
-      lines(c_pred_vec, mle_band_upper_lan, col="red", lty=3, lwd=2)
-      lines(c_pred_vec, mle_band_lower_lan, col="red", lty=3, lwd=2)
-      lines(c(x_com_vec), c(Y_com_pred), col="green", lty=2, lwd=2)
-
-      # observed data points
-      points(data_set[,(2* kth -1):(2*kth)])
-
-
-      legend("bottomright",legend=c(
-        paste("Langmuir : Qm=",
-              signif(Q_est_mle_lan,6),
-              ", Kd=",round(K_est_mle_lan),
-              ", MSE=",format(mse_lan,scientific = T),sep=""),
-        paste("Sips : Qn=",
-              signif(Q_est_mle_sips,6),
-              ", Kd=",round(K_est_mle_sips),
-              ", n=", round(n_est_mle_sips),
-              ", MSE=",format(mse_sips,scientific = T),sep=""),
-        paste( input$conf_level, " Confidence band of Langmuir MLE"),
-        paste( input$conf_level, " Confidence band of Sips MLE"),
-        paste("Commercial Product : Qm=",
-              signif(Q_com,6),
-              ", Kd=",round(K_com),
-              ", MSE=",format(mse_0, scientific = T),sep=""),
-        paste("observed point")
-      ),
-      bty='n',
-      col=c("red","blue","red", "blue", "green", "black"),lwd=c(2, 2, 2, 2,2, NA),lty=c(1,1,3,3,2,NA),
-      density = c(0, 0, 0, 0, 0, NA), fill = c("red", "blue","red", "blue", "green", "white"),
-      border=c(NA, NA, NA, NA, NA, NA),
-      pch = c(NA, NA, NA, NA, NA, 1),
-      cex=1
-      )
+      
+      
+      
+      AIC_fre <- 2 * length(coef_mle) + negLogLikelihood_fre_trans(coef_mle, data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2]))
+      AIC_lan <- 2 * length(coef_mle_lan) + negLogLikelihood(coef_mle_lan, data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2]))
+      if(AIC_lan < AIC_fre){
+        AIC_winner <- "Langmuir"
+      } else if(AIC_lan > AIC_fre){
+        AIC_winner <- "Freundlich"
+      } else { AIC_winner <- "even" }
+      
+      
+      paste("AIC of Freundlich model is ", AIC_fre, "\nAIC of Langmuir model is ", AIC_lan, "\nWinner is ", AIC_winner)
+      
     })
-
-
-
-    output$mle_table_sips_trans <- renderTable({
-      value <- inputVar()
-
-      kth <- as.numeric(value[1])
-
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-
-
-      ### 0. Commerical product
-
-
-      ### 2. Freundlich model
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
-                               Cw.mol.l = X_trans)
-
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
-      # Compute mse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      # ### 2. MLE
-      # # 2-1 initial values from the previous linear model
-      # sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      # initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2],),
-      #                         1,
-      #                         sqrt(sigma2_initial))
-      #
-      # # 3-2 fit a new model of reparameterization for Kd
-      # if(value[4] == "optim"){
-      #   fit_mle_sips <- optim(fn = negLogLikelihood_sips,
-      #                         par = initial_value_mle,
-      #                         hessian = T,
-      #                         method = value[5],
-      #                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-      #   )
-      #   coef_mle_sips <- fit_mle_sips$par
-      #
-      # } else if(value[4] == "nlm"){
-      #   fit_mle_sips <- nlm(f = negLogLikelihood_sips,
-      #                       p = initial_value_mle,
-      #                       hessian = T,
-      #                       data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-      #   )
-      #
-      #   coef_mle_sips <- fit_mle_sips$estimate
-      #
-      # }
-      #
-      # # 3-3 get estimates
-      # Q_est_mle_sips <- coef_mle_sips[1]
-      # K_est_mle_sips <- exp( coef_mle_sips[2] )
-      # n_est_mle_sips <- coef_mle_sips[3]
-      # sigma_est_mle_sips <- coef_mle_sips[4]
-
-      # 2-1 initial values from the previous linear model
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
-                              1,
-                              sqrt(sigma2_initial))
-
-      # 3-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle_sips <- optim(fn = negLogLikelihood_sips_trans,
-                              par = initial_value_mle,
-                              hessian = T,
-                              method = value[5],
-                              data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle_sips <- fit_mle_sips$par
-
-      } else if(value[4] == "nlm"){
-        fit_mle_sips <- nlm(f = negLogLikelihood_sips_trans,
-                            p = initial_value_mle,
-                            hessian = T,
-                            data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-
-        coef_mle_sips <- fit_mle_sips$estimate
-
-      }
-
-
-      Cov_est <- solve(fit_mle_sips$hessian)
-      std_error1 <- sqrt(Cov_est[1,1]  )
-      std_error2 <- sqrt(Cov_est[2,2]  )
-      std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle_sips[2]))^(2) )
-      std_error3 <- sqrt(Cov_est[3,3])
-      std_error3_delta_method <- sqrt(Cov_est[3,3] *(exp(coef_mle_sips[3]))^(2)  )
-
-      std_error4 <- sqrt(Cov_est[4,4]  )
-
-
-      if( input$conf_level == "95%"){
-        conf_val <- qnorm(0.975)
-      } else if( input$conf_level == "90%"){
-        conf_val <- qnorm(0.95)
-      }  else if (input$conf_level == "80%"){
-        conf_val<- qnorm(0.90)
-      } else if (input$conf_level == "99%"){
-        conf_val<- qnorm(0.995)
-      }
-
-      MLE <- c(coef_mle_sips[1], coef_mle_sips[2], exp(coef_mle_sips[2]),
-               coef_mle_sips[3],
-               1+ exp(coef_mle_sips[3]),
-               ##
-               # exp(coef_mle_sips[3]),
-               ## without 1+
-               coef_mle_sips[4])
-      SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3, std_error3_delta_method,std_error4)
-      upper <- c(coef_mle_sips[1] + conf_val * std_error1,
-                 coef_mle_sips[2] + conf_val * std_error2,
-                 exp(coef_mle_sips[2] + conf_val * std_error2),
-                 # exp(coef_mle_sips[2]) + conf_val * std_error2_delta_method,
-                 coef_mle_sips[3] + conf_val * std_error3,
-                  1 + exp(coef_mle_sips[3] + conf_val * std_error3),
-                 # exp(coef_mle_sips[3] + conf_val * std_error3),
-                 ## without 1+
-                 coef_mle_sips[4] + conf_val * std_error4
-      )
-      lower <- c(coef_mle_sips[1] - conf_val * std_error1,
-                 coef_mle_sips[2] - conf_val * std_error2,
-                 exp(coef_mle_sips[2] - conf_val * std_error2),
-                 # exp(coef_mle_sips[2]) - conf_val * std_error2_delta_method,
-                 coef_mle_sips[3] - conf_val * std_error3,
-                 1+exp(coef_mle_sips[3] - conf_val * std_error3),
-                 # exp(coef_mle_sips[3] - conf_val * std_error3),
-                 ## without 1+
-                 coef_mle_sips[4] - conf_val * std_error4
-      )
-
-
-
-      table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "nprime", "n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-
-
-    },
-    bordered=T)
-
-
-
-
-
-    output$hessian_num_original_inverse_sips_trans <- renderTable({
-      value <- inputVar()
-
-      kth <- as.numeric(value[1])
-
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-
-
-      ### 0. Commerical product
-
-
-      ### 2. Freundlich model
-      ## 2-1 initial value
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
-                               Cw.mol.l = X_trans)
-
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
-      # Compute mse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      ### 2. MLE
-      # 2-1 initial values from the previous linear model
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
-                              1,
-                              sqrt(sigma2_initial))
-
-      # 3-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle_sips <- optim(fn = negLogLikelihood_sips_trans,
-                              par = initial_value_mle,
-                              hessian = T,
-                              method = value[5],
-                              data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle_sips <- fit_mle_sips$par
-
-      } else if(value[4] == "nlm"){
-        fit_mle_sips <- nlm(f = negLogLikelihood_sips_trans,
-                            p = initial_value_mle,
-                            hessian = T,
-                            data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-
-        coef_mle_sips <- fit_mle_sips$estimate
-
-      }
-
-
-
-      solve(fit_mle_sips$hessian)
-
-    },
-    colnames = F,
-    digits=-2,
-    bordered = T
-    )
-
     
-    #### No transformation on n
-    output$plot_sips <- renderPlot({
-      value <- inputVar()
-
-
-      kth <- as.numeric(value[1])
-
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-
-
-      ### 0. Commerical product
-      Q_com <- initial_values[[1]]
-      K_com <- initial_values[[2]]
-
-      x_com_vec <- x_matrix[kth,]
-      Y_com_pred <- (Q_com * K_com * x_com_vec) / (1 + K_com * x_com_vec)
-
-      mse_0 <- sum( (data_kth[,2] - Y_com_pred )^2 ) / n_data_kth
-
-
-      ### 2. Linear model
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
-                               Cw.mol.l = X_trans)
-
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
-      x_vec <- 1 / x_matrix[kth,-1]
-      Y_trans_pred <- predict(fit_lm, list(Cw.mol.l = x_vec  ))
-      Y_original_pred <- 1/ Y_trans_pred
-
-      # Compute mse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      ### 3. MLE
-      # 3-1 initial values from the previous linear model
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
-                              sqrt(sigma2_initial))
-
-
-      # 3-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle_lan <- optim(fn = negLogLikelihood,
-                             par = initial_value_mle,
-                             hessian = T,
-                             method = value[5],
-                             data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle_lan <- fit_mle_lan$par
-
-      } else if(value[4] == "nlm"){
-        fit_mle_lan <- nlm(f = negLogLikelihood,
-                           p = initial_value_mle,
-                           hessian = T,
-                           data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-
-        coef_mle_lan <- fit_mle_lan$estimate
-
-      }
-
-      # 3-3 get estimates
-      Q_est_mle_lan <- coef_mle_lan[1]
-      K_est_mle_lan <- exp( coef_mle_lan[2] )
-      sigma_est_mle_lan <- coef_mle_lan[3]
-
-      # 3-4 prepare for plotting
-
-      Y_original_pred_mle_lan <- ( coef_mle_lan[1] * exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]) ) / (1 + exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]))
-      res_mle_lan <- data_kth[,2] - Y_original_pred_mle_lan
-      mse_lan <- (sum(res_mle_lan^(2)) ) / (n_data_kth  )
-      # compute mse
-
-
-      fitted_values_mle_lan <-  ( coef_mle_lan[1] * exp(coef_mle_lan[2]) *  x_matrix[kth, ]) / (1 + exp(coef_mle_lan[2]) * x_matrix[kth, ])
-      # fitted values based on mle for plotting
-
-
-      # 3-5 MLE Confidence band
-      if( input$conf_level == "95%"){
-        conf_val <- qnorm(0.975)
-      } else if( input$conf_level == "90%"){
-        conf_val <- qnorm(0.95)
-      }  else if (input$conf_level == "80%"){
-        conf_val<- qnorm(0.90)
-      } else if(input$conf_level == "99%"){
-        conf_val<- qnorm(0.995)
-      }
-
-      Cov_est_lan <- solve(fit_mle_lan$hessian)
-      c_pred_vec <- x_matrix[kth, ]
-
-      mle_band_upper_lan <- rep(NA, length(c_pred_vec))
-      mle_band_lower_lan <- rep(NA, length(c_pred_vec))
-
-      for(i in 1:length(c_pred_vec)){
-        c_now <- c_pred_vec[i]
-        se_est <- se_for_CI_mle(Q = Q_est_mle_lan, K_new=coef_mle_lan[2], C=c_now,
-                                sigma = sigma_est_mle_lan, cov_mat=Cov_est_lan
-        )
-
-        term <- conf_val * se_est
-        mle_band_upper_lan[i] <- fitted_values_mle_lan[i] + term
-        mle_band_lower_lan[i] <- fitted_values_mle_lan[i] - term
-      }
-
-
-
-
-
-
-
-
-
-
-      ### Sips model
-      ## 1. initial value
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
-                               Cw.mol.l = X_trans)
-
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
-      # Compute mse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      ### 2. MLE
-      # 2-1 initial values from the previous linear model
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], 
-                              log( coef_lm[1] / coef_lm[2],),
-                              # ( coef_lm[1] / coef_lm[2]),
-                              1,
-                              # 1/2,
-                              sqrt(sigma2_initial))
-
-      # 3-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle_sips <- optim(fn = negLogLikelihood_sips,
-                             par = initial_value_mle,
-                             hessian = T,
-                             method = value[5],
-                             data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle_sips <- fit_mle_sips$par
-
-      } else if(value[4] == "nlm"){
-        fit_mle_sips <- nlm(f = negLogLikelihood_sips,
-                           p = initial_value_mle,
-                           hessian = T,
-                           data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-
-        coef_mle_sips <- fit_mle_sips$estimate
-
-      }
-
-      # 3-3 get estimates
-      Q_est_mle_sips <- coef_mle_sips[1]
-      K_est_mle_sips <- exp( coef_mle_sips[2] )
-      # K_est_mle_sips <- coef_mle_sips[2] 
-      
-      n_est_mle_sips <- coef_mle_sips[3]
-      # n_est_mle_sips <- 1/coef_mle_sips[3]
-      ## reverse 1/n
-      sigma_est_mle_sips <- coef_mle_sips[4]
-
-      # 3-4 prepare for plotting
-
-     # Y_original_pred_mle_sips <- ( coef_mle_sips[1] * coef_mle_sips[2] * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) ) / (1 + coef_mle_sips[2] * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) )
-      
-      Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) )
-      # Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(coef_mle_sips[3]) )
-      ## reverse 1/n
-      res_mle_sips <- data_kth[,2] - Y_original_pred_mle_sips
-      mse_sips <- (sum(res_mle_sips^(2)) ) / (n_data_kth  )
-      # compute mse
-
-      # fitted_values_mle_sips <-  ( coef_mle_sips[1] * coef_mle_sips[2] *  x_matrix[kth, ]^(1/coef_mle_sips[3]) ) / (1 + coef_mle_sips[2] * x_matrix[kth, ]^(1/coef_mle_sips[3])  )
-      
-     fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(1/coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(1/coef_mle_sips[3])  )
-     # fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(coef_mle_sips[3])  )
-      ## reverse 1/n
-      # fitted values based on mle for plotting
-
-
-      # 3-5 MLE Confidence band
-      if( input$conf_level == "95%"){
-        conf_val <- qnorm(0.975)
-      } else if( input$conf_level == "90%"){
-        conf_val <- qnorm(0.95)
-      }  else if (input$conf_level == "80%"){
-        conf_val<- qnorm(0.90)
-      } else if(input$conf_level == "99%"){
-        conf_val<- qnorm(0.995)
-      }
-
-      Cov_est_sips <- solve(fit_mle_sips$hessian)
-      c_pred_vec <- x_matrix[kth, ]
-
-      mle_band_upper_sips <- rep(NA, length(c_pred_vec))
-      mle_band_lower_sips <- rep(NA, length(c_pred_vec))
-
-      for(i in 1:length(c_pred_vec)){
-        c_now <- c_pred_vec[i]
-        se_est <- se_for_CI_mle_sips(Q = Q_est_mle_sips, K_new=coef_mle_sips[2],
-                                     n=n_est_mle_sips, C=c_now,
-                                sigma = sigma_est_mle_sips, cov_mat=Cov_est_sips
-        )
-
-        term <- conf_val * se_est
-        mle_band_upper_sips[i] <- fitted_values_mle_sips[i] + term
-        mle_band_lower_sips[i] <- fitted_values_mle_sips[i] - term
-      }
-
-
-
-
-
-      ### 4. Plot
-      mle_sips_max <- max(mle_band_upper_sips, na.rm = T)
-      max_final <- max(c(unlist(data_kth[-1,2]),
-                         mle_sips_max,
-                         mle_band_upper_lan ))
-
-      # main plot
-      plot(x_matrix[kth, ], fitted_values_mle_sips, type='l', xlab = 'Cw.mol.l', ylab = 'q.mol.kg',
-           ylim = c(0, max_final ), lwd = 2, col= 'blue',
-           main=paste( value[2], ", Data ID: ", value[1]))
-
-
-      # Confidence band
-      lines(c_pred_vec, mle_band_upper_sips, col="blue", lty=3, lwd=2)
-      lines(c_pred_vec, mle_band_lower_sips, col="blue", lty=3, lwd=2)
-
-
-      lines(c_pred_vec, fitted_values_mle_lan, col="red", lty=1, lwd=2)
-
-      lines(c_pred_vec, mle_band_upper_lan, col="red", lty=3, lwd=2)
-      lines(c_pred_vec, mle_band_lower_lan, col="red", lty=3, lwd=2)
-      lines(c(x_com_vec), c(Y_com_pred), col="green", lty=2, lwd=2)
-
-      # observed data points
-      points(data_set[,(2* kth -1):(2*kth)])
-
-
-      legend("bottomright",legend=c(
-        paste("Langmuir : Qm=",
-              signif(Q_est_mle_lan,6),
-              ", Kd=",round(K_est_mle_lan),
-              ", MSE=",format(mse_lan,scientific = T),sep=""),
-        paste("Sips : Qn=",
-              signif(Q_est_mle_sips,6),
-              ", Kd=",signif(K_est_mle_sips,6),
-              ", n=", signif(n_est_mle_sips,6),
-              ", MSE=",format(mse_sips,scientific = T),sep=""),
-        paste( input$conf_level, " Confidence band of Langmuir MLE"),
-        paste( input$conf_level, " Confidence band of Sips MLE"),
-        paste("Commercial Product : Qm=",
-              signif(Q_com,6),
-              ", Kd=",round(K_com),
-              ", MSE=",format(mse_0, scientific = T),sep=""),
-        paste("observed point")
-      ),
-      bty='n',
-      col=c("red","blue","red", "blue", "green", "black"),lwd=c(2, 2, 2, 2,2, NA),lty=c(1,1,3,3,2,NA),
-      density = c(0, 0, 0, 0, 0, NA), fill = c("red", "blue","red", "blue", "green", "white"),
-      border=c(NA, NA, NA, NA, NA, NA),
-      pch = c(NA, NA, NA, NA, NA, 1),
-      cex=1
-      )
-    })
-
-
-
-    output$mle_table_sips <- renderTable({
-      value <- inputVar()
-
-      kth <- as.numeric(value[1])
-
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-
-
-      ### 0. Commerical product
-
-
-      ### 2. Freundlich model
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
-                               Cw.mol.l = X_trans)
-
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
-      # Compute mse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      ### 2. MLE
-      # 2-1 initial values from the previous linear model
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], 
-                              log( coef_lm[1] / coef_lm[2],),
-                              #( coef_lm[1] / coef_lm[2] ),
-                              
-                              1,
-                              #1/2,
-                              sqrt(sigma2_initial))
-
-      # 3-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle_sips <- optim(fn = negLogLikelihood_sips,
-                              par = initial_value_mle,
-                              hessian = T,
-                              method = value[5],
-                              data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle_sips <- fit_mle_sips$par
-
-      } else if(value[4] == "nlm"){
-        fit_mle_sips <- nlm(f = negLogLikelihood_sips,
-                            p = initial_value_mle,
-                            hessian = T,
-                            data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-
-        coef_mle_sips <- fit_mle_sips$estimate
-
-      }
-
-      # 3-3 get estimates
-      Q_est_mle_sips <- coef_mle_sips[1]
-      # K_est_mle_sips <-  coef_mle_sips[2] 
-      
-      K_est_mle_sips <- exp( coef_mle_sips[2] )
-      n_est_mle_sips <- coef_mle_sips[3]
-      # n_est_mle_sips <- 1/ coef_mle_sips[3]
-      ## reverse 1/n
-      sigma_est_mle_sips <- coef_mle_sips[4]
-
-
-      Cov_est <- solve(fit_mle_sips$hessian)
-      std_error1 <- sqrt(Cov_est[1,1]  )
-      std_error2 <- sqrt(Cov_est[2,2]  )
-      std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle_sips[2]))^(2) )
-      std_error3 <- sqrt(Cov_est[3,3])
-     #  std_error3_reverse <- sqrt(Cov_est[3,3] * (-1 * (coef_mle[3])^(-2))^(2)  )
-      
-      std_error4 <- sqrt(Cov_est[4,4]  )
-
-
-      if( input$conf_level == "95%"){
-        conf_val <- qnorm(0.975)
-      } else if( input$conf_level == "90%"){
-        conf_val <- qnorm(0.95)
-      }  else if (input$conf_level == "80%"){
-        conf_val<- qnorm(0.90)
-      } else if (input$conf_level == "99%"){
-        conf_val<- qnorm(0.995)
-      }
-
-      MLE <- c(coef_mle_sips[1], 
-               coef_mle_sips[2], 
-               exp(coef_mle_sips[2]), 
-               coef_mle_sips[3],
-               # coef_mle_sips[3], 
-              #  1/coef_mle_sips[3], 
-               ## revserse 1/n
-               coef_mle_sips[4])
-      SE <- c(std_error1, 
-              std_error2, 
-              std_error2_delta_method,
-              std_error3,
-              # std_error3_reverse,
-              std_error4)
-      upper <- c(coef_mle_sips[1] + conf_val * std_error1,
-                 coef_mle_sips[2] + conf_val * std_error2,
-                 exp(coef_mle_sips[2] + conf_val * std_error2),
-                 # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
-                 coef_mle_sips[3] + conf_val * std_error2,
-                 
-                 # coef_mle_sips[3] + conf_val * std_error3,
-                #  1/ (coef_mle_sips[3] - conf_val * std_error3) ,
-                 ## reverse 1/n
-                 coef_mle_sips[4] + conf_val * std_error4
-                 )
-      lower <- c(coef_mle_sips[1] - conf_val * std_error1,
-                 coef_mle_sips[2] - conf_val * std_error2,
-                exp(coef_mle_sips[2] - conf_val * std_error2),
-                 # exp(coef_mle[2]) - conf_val * std_error2_delta_method,
-                 coef_mle_sips[3] - conf_val * std_error2,
-                 # coef_mle_sips[3] - conf_val * std_error3,
-                 # 1/(coef_mle_sips[3] + conf_val * std_error3 ),
-                 ## reverse 1/n
-                 coef_mle_sips[4] - conf_val * std_error4
-                 )
-
-    #  table_result <- data.frame(Par = c("Qmax", "K", "n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-     #                            Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-      
-
-      table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-      
-      # table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "nprime","n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-      #                            Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-      # 
-
-    },
-    bordered=T)
-
-
-
-
-
-
-
-    output$hessian_num_original_inverse_sips <- renderTable({
-      value <- inputVar()
-
-      kth <- as.numeric(value[1])
-
-      data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
-      data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
-
-      n_data_kth <- dim(data_kth)[1]
-      x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
-      initial_values <- data_meta[ kth, c(9,10)]
-      location_error_vec <- NA
-      colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
-
-
-      ### 0. Commerical product
-
-
-      ### 2. Freundlich model
-      ## 2-1 initial value
-      Y_trans <-  (1 / data_kth[-1,2] )
-      X_trans <- (1 / data_kth[-1,1] )
-
-      data_trans <- data.frame(q.mol.kg = Y_trans,
-                               Cw.mol.l = X_trans)
-
-      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
-      coef_lm <- fit_lm$coefficients
-      Q_est_lm <- 1 / coef_lm[1]
-      K_est_lm <- ( coef_lm[1] / coef_lm[2] )
-
-      # Compute mse
-      fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
-
-      res_lm <- data_kth[-1,2] - 1/fitted_values_lm
-      mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
-
-
-      ### 2. MLE
-      # 2-1 initial values from the previous linear model
-      sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
-      initial_value_mle <- c( 1/coef_lm[1], 
-                              log( coef_lm[1] / coef_lm[2],),
-                              1,
-                              sqrt(sigma2_initial))
-
-      # 3-2 fit a new model of reparameterization for Kd
-      if(value[4] == "optim"){
-        fit_mle_sips <- optim(fn = negLogLikelihood_sips,
-                              par = initial_value_mle,
-                              hessian = T,
-                              method = value[5],
-                              data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-        coef_mle_sips <- fit_mle_sips$par
-
-      } else if(value[4] == "nlm"){
-        fit_mle_sips <- nlm(f = negLogLikelihood_sips,
-                            p = initial_value_mle,
-                            hessian = T,
-                            data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
-        )
-
-        coef_mle_sips <- fit_mle_sips$estimate
-
-      }
-
-
-
-      solve(fit_mle_sips$hessian)
-
-    },
-    colnames = F,
-    digits=-2,
-    bordered = T
-    )
+    
+    
+    # output$hessian_num_original_fre <- renderTable({
+    #   value <- inputVar()
+    #   
+    # 
+    #   kth <- as.numeric(value[1])
+    #   
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    #   
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    #   
+    #   
+    #   ### 0. Commerical product
+    #   
+    #   
+    #   ### 2. Freundlich model
+    #   ## 2-1 initial value
+    #   Y_trans <-  log(data_kth[-1,2] )
+    #   X_trans <- log(data_kth[-1,1] )
+    #   
+    #   data_trans <- data.frame(q.mol.kg = Y_trans, 
+    #                            Cw.mol.l = X_trans)
+    #   
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   K_F_est_lm <- exp( coef_lm[1] )
+    #   n_est_lm <- ( 1 / coef_lm[2] ) 
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    #   
+    #   
+    #   res_lm <- data_kth[-1,2] - exp(fitted_values_lm)
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   
+    #   ## 2-2. MLE
+    #   initial_value_mle <- c( K_F_est_lm, n_est_lm, sqrt(sigma2_initial))
+    #   
+    #   
+    #   # 2-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle <- optim(fn = negLogLikelihood_fre,
+    #                      par = initial_value_mle,
+    #                      hessian = T,
+    #                      method = value[5],
+    #                      data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle <- fit_mle$par
+    #     
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle <- nlm(f = negLogLikelihood_fre,
+    #                    p = initial_value_mle,
+    #                    hessian = T,
+    #                    data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     
+    #     coef_mle <- fit_mle$estimate
+    #     
+    #   }
+    #   
+    #   
+    # 
+    #   
+    #   fit_mle$hessian
+    #   
+    #   
+    #   
+    # },
+    # colnames = F,
+    # digits=-2,
+    # bordered =T
+    # )
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # output$hessian_num_original_inverse_fre <- renderTable({
+    #   value <- inputVar()
+    #   
+    #   kth <- as.numeric(value[1])
+    #   
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    #   
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    #   
+    #   
+    #   ### 0. Commerical product
+    #   
+    #   
+    #   ### 2. Freundlich model
+    #   ## 2-1 initial value
+    #   Y_trans <-  log(data_kth[-1,2] )
+    #   X_trans <- log(data_kth[-1,1] )
+    #   
+    #   data_trans <- data.frame(q.mol.kg = Y_trans, 
+    #                            Cw.mol.l = X_trans)
+    #   
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   K_F_est_lm <- exp( coef_lm[1] )
+    #   n_est_lm <- ( 1 / coef_lm[2] ) 
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    #   
+    #   
+    #   res_lm <- data_kth[-1,2] - exp(fitted_values_lm)
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   
+    #   ## 2-2. MLE
+    #   initial_value_mle <- c( K_F_est_lm, n_est_lm, sqrt(sigma2_initial))
+    #   
+    #   
+    #   # 2-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle <- optim(fn = negLogLikelihood_fre,
+    #                      par = initial_value_mle,
+    #                      hessian = T,
+    #                      method = value[5],
+    #                      data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle <- fit_mle$par
+    #     
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle <- nlm(f = negLogLikelihood_fre,
+    #                    p = initial_value_mle,
+    #                    hessian = T,
+    #                    data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     
+    #     coef_mle <- fit_mle$estimate
+    #     
+    #   }
+    # 
+    #   
+    #   solve(fit_mle$hessian)
+    #   
+    # },
+    # colnames = F,
+    # digits=-2,
+    # bordered = T
+    # )
+    
+    
+    
+    
+    # ###################################################################
+    # #### Model 3. Sips
+    # 
+    # 
+    # 
+    # ### Trans
+    # output$plot_sips_trans <- renderPlot({
+    #   value <- inputVar()
+    # 
+    # 
+    #   kth <- as.numeric(value[1])
+    # 
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    # 
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    # 
+    # 
+    #   ### 0. Commerical product
+    #   Q_com <- initial_values[[1]]
+    #   K_com <- initial_values[[2]]
+    # 
+    #   x_com_vec <- x_matrix[kth,]
+    #   Y_com_pred <- (Q_com * K_com * x_com_vec) / (1 + K_com * x_com_vec)
+    # 
+    #   mse_0 <- sum( (data_kth[,2] - Y_com_pred )^2 ) / n_data_kth
+    # 
+    # 
+    #   ### 2. Linear model
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   x_vec <- 1 / x_matrix[kth,-1]
+    #   Y_trans_pred <- predict(fit_lm, list(Cw.mol.l = x_vec  ))
+    #   Y_original_pred <- 1/ Y_trans_pred
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   ### 3. MLE
+    #   # 3-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
+    #                           sqrt(sigma2_initial))
+    # 
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_lan <- optim(fn = negLogLikelihood,
+    #                          par = initial_value_mle,
+    #                          hessian = T,
+    #                          method = value[5],
+    #                          data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_lan <- fit_mle_lan$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_lan <- nlm(f = negLogLikelihood,
+    #                        p = initial_value_mle,
+    #                        hessian = T,
+    #                        data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_lan <- fit_mle_lan$estimate
+    # 
+    #   }
+    # 
+    #   # 3-3 get estimates
+    #   Q_est_mle_lan <- coef_mle_lan[1]
+    #   K_est_mle_lan <- exp( coef_mle_lan[2] )
+    #   sigma_est_mle_lan <- coef_mle_lan[3]
+    # 
+    #   # 3-4 prepare for plotting
+    # 
+    #   Y_original_pred_mle_lan <- ( coef_mle_lan[1] * exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]) ) / (1 + exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]))
+    #   res_mle_lan <- data_kth[,2] - Y_original_pred_mle_lan
+    #   mse_lan <- (sum(res_mle_lan^(2)) ) / (n_data_kth  )
+    #   # compute mse
+    # 
+    # 
+    #   fitted_values_mle_lan <-  ( coef_mle_lan[1] * exp(coef_mle_lan[2]) *  x_matrix[kth, ]) / (1 + exp(coef_mle_lan[2]) * x_matrix[kth, ])
+    #   # fitted values based on mle for plotting
+    # 
+    # 
+    #   # 3-5 MLE Confidence band
+    #   if( input$conf_level == "95%"){
+    #     conf_val <- qnorm(0.975)
+    #   } else if( input$conf_level == "90%"){
+    #     conf_val <- qnorm(0.95)
+    #   }  else if (input$conf_level == "80%"){
+    #     conf_val<- qnorm(0.90)
+    #   } else if(input$conf_level == "99%"){
+    #     conf_val<- qnorm(0.995)
+    #   }
+    # 
+    #   Cov_est_lan <- solve(fit_mle_lan$hessian)
+    #   c_pred_vec <- x_matrix[kth, ]
+    # 
+    #   mle_band_upper_lan <- rep(NA, length(c_pred_vec))
+    #   mle_band_lower_lan <- rep(NA, length(c_pred_vec))
+    # 
+    #   for(i in 1:length(c_pred_vec)){
+    #     c_now <- c_pred_vec[i]
+    #     se_est <- se_for_CI_mle(Q = Q_est_mle_lan, K_new=coef_mle_lan[2], C=c_now,
+    #                             sigma = sigma_est_mle_lan, cov_mat=Cov_est_lan
+    #     )
+    # 
+    #     term <- conf_val * se_est
+    #     mle_band_upper_lan[i] <- fitted_values_mle_lan[i] + term
+    #     mle_band_lower_lan[i] <- fitted_values_mle_lan[i] - term
+    #   }
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    #   ### Sips model
+    #   ## 1. initial value
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   ### 2. MLE
+    #   # 2-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
+    #                           1,
+    #                           sqrt(sigma2_initial))
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_sips <- optim(fn = negLogLikelihood_sips_trans,
+    #                           par = initial_value_mle,
+    #                           hessian = T,
+    #                           method = value[5],
+    #                           data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_sips <- fit_mle_sips$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_sips <- nlm(f = negLogLikelihood_sips_trans,
+    #                         p = initial_value_mle,
+    #                         hessian = T,
+    #                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_sips <- fit_mle_sips$estimate
+    # 
+    #   }
+    # 
+    #   # 3-3 get estimates
+    #   Q_est_mle_sips <- coef_mle_sips[1]
+    #   K_est_mle_sips <- exp( coef_mle_sips[2] )
+    #   n_est_mle_sips <- 1 + exp( coef_mle_sips[3] )
+    #   # n_est_mle_sips <- exp( coef_mle_sips[3] )
+    #   ## without 1+
+    #   sigma_est_mle_sips <- coef_mle_sips[4]
+    # 
+    #   # 3-4 prepare for plotting
+    # 
+    #   Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (1+exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (1+exp(coef_mle_sips[3]) )  ) )
+    #   # Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/ (exp(coef_mle_sips[3]) )  ) )
+    #   ## without 1+
+    #   res_mle_sips <- data_kth[,2] - Y_original_pred_mle_sips
+    #   mse_sips <- (sum(res_mle_sips^(2)) ) / (n_data_kth  )
+    #   # compute mse
+    # 
+    # 
+    #   fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(1/ (1+exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(1/ (1+exp(coef_mle_sips[3]) )  )  )
+    #   # fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(1/ (exp(coef_mle_sips[3]) )  ) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(1/ (exp(coef_mle_sips[3]) )  )  )
+    #   ## without 1+
+    #   # fitted values based on mle for plotting
+    # 
+    # 
+    #   # 3-5 MLE Confidence band
+    #   if( input$conf_level == "95%"){
+    #     conf_val <- qnorm(0.975)
+    #   } else if( input$conf_level == "90%"){
+    #     conf_val <- qnorm(0.95)
+    #   }  else if (input$conf_level == "80%"){
+    #     conf_val<- qnorm(0.90)
+    #   } else if(input$conf_level == "99%"){
+    #     conf_val<- qnorm(0.995)
+    #   }
+    # 
+    #   Cov_est_sips <- solve(fit_mle_sips$hessian)
+    #   c_pred_vec <- x_matrix[kth, ]
+    # 
+    #   mle_band_upper_sips <- rep(NA, length(c_pred_vec))
+    #   mle_band_lower_sips <- rep(NA, length(c_pred_vec))
+    # 
+    #   for(i in 1:length(c_pred_vec)){
+    #     c_now <- c_pred_vec[i]
+    #     se_est <- se_for_CI_mle_sips_trans(Q = Q_est_mle_sips, K_new=coef_mle_sips[2],
+    #                                  n_new=coef_mle_sips[3], C=c_now,
+    #                                  sigma = sigma_est_mle_sips, cov_mat=Cov_est_sips
+    #     )
+    # 
+    #     term <- conf_val * se_est
+    #     mle_band_upper_sips[i] <- fitted_values_mle_sips[i] + term
+    #     mle_band_lower_sips[i] <- fitted_values_mle_sips[i] - term
+    #   }
+    # 
+    # 
+    # 
+    # 
+    # 
+    #   ### 4. Plot
+    #   max_val <- max(mle_band_upper_sips, na.rm = T)
+    #   max_final <- max(c(unlist(data_kth[-1,2]), max_val, mle_band_upper_lan ))
+    # 
+    #   # main plot
+    #   plot(x_matrix[kth, ], fitted_values_mle_sips, type='l', xlab = 'Cw.mol.l', ylab = 'q.mol.kg',
+    #        ylim = c(0, max_final ), lwd = 2, col= 'blue',
+    #        main=paste( value[2], ", Data ID: ", value[1]))
+    # 
+    # 
+    #   # Confidence band
+    #   lines(c_pred_vec, mle_band_upper_sips, col="blue", lty=3, lwd=2)
+    #   lines(c_pred_vec, mle_band_lower_sips, col="blue", lty=3, lwd=2)
+    # 
+    # 
+    #   lines(c_pred_vec, fitted_values_mle_lan, col="red", lty=1, lwd=2)
+    # 
+    #   lines(c_pred_vec, mle_band_upper_lan, col="red", lty=3, lwd=2)
+    #   lines(c_pred_vec, mle_band_lower_lan, col="red", lty=3, lwd=2)
+    #   lines(c(x_com_vec), c(Y_com_pred), col="green", lty=2, lwd=2)
+    # 
+    #   # observed data points
+    #   points(data_set[,(2* kth -1):(2*kth)])
+    # 
+    # 
+    #   legend("bottomright",legend=c(
+    #     paste("Langmuir : Qm=",
+    #           signif(Q_est_mle_lan,6),
+    #           ", Kd=",round(K_est_mle_lan),
+    #           ", MSE=",format(mse_lan,scientific = T),sep=""),
+    #     paste("Sips : Qn=",
+    #           signif(Q_est_mle_sips,6),
+    #           ", Kd=",round(K_est_mle_sips),
+    #           ", n=", round(n_est_mle_sips),
+    #           ", MSE=",format(mse_sips,scientific = T),sep=""),
+    #     paste( input$conf_level, " Confidence band of Langmuir MLE"),
+    #     paste( input$conf_level, " Confidence band of Sips MLE"),
+    #     paste("Commercial Product : Qm=",
+    #           signif(Q_com,6),
+    #           ", Kd=",round(K_com),
+    #           ", MSE=",format(mse_0, scientific = T),sep=""),
+    #     paste("observed point")
+    #   ),
+    #   bty='n',
+    #   col=c("red","blue","red", "blue", "green", "black"),lwd=c(2, 2, 2, 2,2, NA),lty=c(1,1,3,3,2,NA),
+    #   density = c(0, 0, 0, 0, 0, NA), fill = c("red", "blue","red", "blue", "green", "white"),
+    #   border=c(NA, NA, NA, NA, NA, NA),
+    #   pch = c(NA, NA, NA, NA, NA, 1),
+    #   cex=1
+    #   )
+    # })
+    # 
+    # 
+    # 
+    # output$mle_table_sips_trans <- renderTable({
+    #   value <- inputVar()
+    # 
+    #   kth <- as.numeric(value[1])
+    # 
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    # 
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    # 
+    # 
+    #   ### 0. Commerical product
+    # 
+    # 
+    #   ### 2. Freundlich model
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   # ### 2. MLE
+    #   # # 2-1 initial values from the previous linear model
+    #   # sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   # initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2],),
+    #   #                         1,
+    #   #                         sqrt(sigma2_initial))
+    #   #
+    #   # # 3-2 fit a new model of reparameterization for Kd
+    #   # if(value[4] == "optim"){
+    #   #   fit_mle_sips <- optim(fn = negLogLikelihood_sips,
+    #   #                         par = initial_value_mle,
+    #   #                         hessian = T,
+    #   #                         method = value[5],
+    #   #                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #   #   )
+    #   #   coef_mle_sips <- fit_mle_sips$par
+    #   #
+    #   # } else if(value[4] == "nlm"){
+    #   #   fit_mle_sips <- nlm(f = negLogLikelihood_sips,
+    #   #                       p = initial_value_mle,
+    #   #                       hessian = T,
+    #   #                       data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #   #   )
+    #   #
+    #   #   coef_mle_sips <- fit_mle_sips$estimate
+    #   #
+    #   # }
+    #   #
+    #   # # 3-3 get estimates
+    #   # Q_est_mle_sips <- coef_mle_sips[1]
+    #   # K_est_mle_sips <- exp( coef_mle_sips[2] )
+    #   # n_est_mle_sips <- coef_mle_sips[3]
+    #   # sigma_est_mle_sips <- coef_mle_sips[4]
+    # 
+    #   # 2-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
+    #                           1,
+    #                           sqrt(sigma2_initial))
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_sips <- optim(fn = negLogLikelihood_sips_trans,
+    #                           par = initial_value_mle,
+    #                           hessian = T,
+    #                           method = value[5],
+    #                           data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_sips <- fit_mle_sips$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_sips <- nlm(f = negLogLikelihood_sips_trans,
+    #                         p = initial_value_mle,
+    #                         hessian = T,
+    #                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_sips <- fit_mle_sips$estimate
+    # 
+    #   }
+    # 
+    # 
+    #   Cov_est <- solve(fit_mle_sips$hessian)
+    #   std_error1 <- sqrt(Cov_est[1,1]  )
+    #   std_error2 <- sqrt(Cov_est[2,2]  )
+    #   std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle_sips[2]))^(2) )
+    #   std_error3 <- sqrt(Cov_est[3,3])
+    #   std_error3_delta_method <- sqrt(Cov_est[3,3] *(exp(coef_mle_sips[3]))^(2)  )
+    # 
+    #   std_error4 <- sqrt(Cov_est[4,4]  )
+    # 
+    # 
+    #   if( input$conf_level == "95%"){
+    #     conf_val <- qnorm(0.975)
+    #   } else if( input$conf_level == "90%"){
+    #     conf_val <- qnorm(0.95)
+    #   }  else if (input$conf_level == "80%"){
+    #     conf_val<- qnorm(0.90)
+    #   } else if (input$conf_level == "99%"){
+    #     conf_val<- qnorm(0.995)
+    #   }
+    # 
+    #   MLE <- c(coef_mle_sips[1], coef_mle_sips[2], exp(coef_mle_sips[2]),
+    #            coef_mle_sips[3],
+    #            1+ exp(coef_mle_sips[3]),
+    #            ##
+    #            # exp(coef_mle_sips[3]),
+    #            ## without 1+
+    #            coef_mle_sips[4])
+    #   SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3, std_error3_delta_method,std_error4)
+    #   upper <- c(coef_mle_sips[1] + conf_val * std_error1,
+    #              coef_mle_sips[2] + conf_val * std_error2,
+    #              exp(coef_mle_sips[2] + conf_val * std_error2),
+    #              # exp(coef_mle_sips[2]) + conf_val * std_error2_delta_method,
+    #              coef_mle_sips[3] + conf_val * std_error3,
+    #               1 + exp(coef_mle_sips[3] + conf_val * std_error3),
+    #              # exp(coef_mle_sips[3] + conf_val * std_error3),
+    #              ## without 1+
+    #              coef_mle_sips[4] + conf_val * std_error4
+    #   )
+    #   lower <- c(coef_mle_sips[1] - conf_val * std_error1,
+    #              coef_mle_sips[2] - conf_val * std_error2,
+    #              exp(coef_mle_sips[2] - conf_val * std_error2),
+    #              # exp(coef_mle_sips[2]) - conf_val * std_error2_delta_method,
+    #              coef_mle_sips[3] - conf_val * std_error3,
+    #              1+exp(coef_mle_sips[3] - conf_val * std_error3),
+    #              # exp(coef_mle_sips[3] - conf_val * std_error3),
+    #              ## without 1+
+    #              coef_mle_sips[4] - conf_val * std_error4
+    #   )
+    # 
+    # 
+    # 
+    #   table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "nprime", "n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+    #                              Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+    # 
+    # 
+    # },
+    # bordered=T)
+    # 
+    # 
+    # 
+    # 
+    # 
+    # output$hessian_num_original_inverse_sips_trans <- renderTable({
+    #   value <- inputVar()
+    # 
+    #   kth <- as.numeric(value[1])
+    # 
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    # 
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    # 
+    # 
+    #   ### 0. Commerical product
+    # 
+    # 
+    #   ### 2. Freundlich model
+    #   ## 2-1 initial value
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   ### 2. MLE
+    #   # 2-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
+    #                           1,
+    #                           sqrt(sigma2_initial))
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_sips <- optim(fn = negLogLikelihood_sips_trans,
+    #                           par = initial_value_mle,
+    #                           hessian = T,
+    #                           method = value[5],
+    #                           data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_sips <- fit_mle_sips$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_sips <- nlm(f = negLogLikelihood_sips_trans,
+    #                         p = initial_value_mle,
+    #                         hessian = T,
+    #                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_sips <- fit_mle_sips$estimate
+    # 
+    #   }
+    # 
+    # 
+    # 
+    #   solve(fit_mle_sips$hessian)
+    # 
+    # },
+    # colnames = F,
+    # digits=-2,
+    # bordered = T
+    # )
+    # 
+    # 
+    # #### No transformation on n
+    # output$plot_sips <- renderPlot({
+    #   value <- inputVar()
+    # 
+    # 
+    #   kth <- as.numeric(value[1])
+    # 
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    # 
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    # 
+    # 
+    #   ### 0. Commerical product
+    #   Q_com <- initial_values[[1]]
+    #   K_com <- initial_values[[2]]
+    # 
+    #   x_com_vec <- x_matrix[kth,]
+    #   Y_com_pred <- (Q_com * K_com * x_com_vec) / (1 + K_com * x_com_vec)
+    # 
+    #   mse_0 <- sum( (data_kth[,2] - Y_com_pred )^2 ) / n_data_kth
+    # 
+    # 
+    #   ### 2. Linear model
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   x_vec <- 1 / x_matrix[kth,-1]
+    #   Y_trans_pred <- predict(fit_lm, list(Cw.mol.l = x_vec  ))
+    #   Y_original_pred <- 1/ Y_trans_pred
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   ### 3. MLE
+    #   # 3-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]),
+    #                           sqrt(sigma2_initial))
+    # 
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_lan <- optim(fn = negLogLikelihood,
+    #                          par = initial_value_mle,
+    #                          hessian = T,
+    #                          method = value[5],
+    #                          data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_lan <- fit_mle_lan$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_lan <- nlm(f = negLogLikelihood,
+    #                        p = initial_value_mle,
+    #                        hessian = T,
+    #                        data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_lan <- fit_mle_lan$estimate
+    # 
+    #   }
+    # 
+    #   # 3-3 get estimates
+    #   Q_est_mle_lan <- coef_mle_lan[1]
+    #   K_est_mle_lan <- exp( coef_mle_lan[2] )
+    #   sigma_est_mle_lan <- coef_mle_lan[3]
+    # 
+    #   # 3-4 prepare for plotting
+    # 
+    #   Y_original_pred_mle_lan <- ( coef_mle_lan[1] * exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]) ) / (1 + exp(coef_mle_lan[2]) * data.matrix(data_kth[,1]))
+    #   res_mle_lan <- data_kth[,2] - Y_original_pred_mle_lan
+    #   mse_lan <- (sum(res_mle_lan^(2)) ) / (n_data_kth  )
+    #   # compute mse
+    # 
+    # 
+    #   fitted_values_mle_lan <-  ( coef_mle_lan[1] * exp(coef_mle_lan[2]) *  x_matrix[kth, ]) / (1 + exp(coef_mle_lan[2]) * x_matrix[kth, ])
+    #   # fitted values based on mle for plotting
+    # 
+    # 
+    #   # 3-5 MLE Confidence band
+    #   if( input$conf_level == "95%"){
+    #     conf_val <- qnorm(0.975)
+    #   } else if( input$conf_level == "90%"){
+    #     conf_val <- qnorm(0.95)
+    #   }  else if (input$conf_level == "80%"){
+    #     conf_val<- qnorm(0.90)
+    #   } else if(input$conf_level == "99%"){
+    #     conf_val<- qnorm(0.995)
+    #   }
+    # 
+    #   Cov_est_lan <- solve(fit_mle_lan$hessian)
+    #   c_pred_vec <- x_matrix[kth, ]
+    # 
+    #   mle_band_upper_lan <- rep(NA, length(c_pred_vec))
+    #   mle_band_lower_lan <- rep(NA, length(c_pred_vec))
+    # 
+    #   for(i in 1:length(c_pred_vec)){
+    #     c_now <- c_pred_vec[i]
+    #     se_est <- se_for_CI_mle(Q = Q_est_mle_lan, K_new=coef_mle_lan[2], C=c_now,
+    #                             sigma = sigma_est_mle_lan, cov_mat=Cov_est_lan
+    #     )
+    # 
+    #     term <- conf_val * se_est
+    #     mle_band_upper_lan[i] <- fitted_values_mle_lan[i] + term
+    #     mle_band_lower_lan[i] <- fitted_values_mle_lan[i] - term
+    #   }
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    #   ### Sips model
+    #   ## 1. initial value
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   ### 2. MLE
+    #   # 2-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], 
+    #                           log( coef_lm[1] / coef_lm[2],),
+    #                           # ( coef_lm[1] / coef_lm[2]),
+    #                           1,
+    #                           # 1/2,
+    #                           sqrt(sigma2_initial))
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_sips <- optim(fn = negLogLikelihood_sips,
+    #                          par = initial_value_mle,
+    #                          hessian = T,
+    #                          method = value[5],
+    #                          data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_sips <- fit_mle_sips$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_sips <- nlm(f = negLogLikelihood_sips,
+    #                        p = initial_value_mle,
+    #                        hessian = T,
+    #                        data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_sips <- fit_mle_sips$estimate
+    # 
+    #   }
+    # 
+    #   # 3-3 get estimates
+    #   Q_est_mle_sips <- coef_mle_sips[1]
+    #   K_est_mle_sips <- exp( coef_mle_sips[2] )
+    #   # K_est_mle_sips <- coef_mle_sips[2] 
+    #   
+    #   n_est_mle_sips <- coef_mle_sips[3]
+    #   # n_est_mle_sips <- 1/coef_mle_sips[3]
+    #   ## reverse 1/n
+    #   sigma_est_mle_sips <- coef_mle_sips[4]
+    # 
+    #   # 3-4 prepare for plotting
+    # 
+    #  # Y_original_pred_mle_sips <- ( coef_mle_sips[1] * coef_mle_sips[2] * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) ) / (1 + coef_mle_sips[2] * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) )
+    #   
+    #   Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(1/coef_mle_sips[3]) )
+    #   # Y_original_pred_mle_sips <- ( coef_mle_sips[1] * exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * data.matrix(data_kth[,1])^(coef_mle_sips[3]) )
+    #   ## reverse 1/n
+    #   res_mle_sips <- data_kth[,2] - Y_original_pred_mle_sips
+    #   mse_sips <- (sum(res_mle_sips^(2)) ) / (n_data_kth  )
+    #   # compute mse
+    # 
+    #   # fitted_values_mle_sips <-  ( coef_mle_sips[1] * coef_mle_sips[2] *  x_matrix[kth, ]^(1/coef_mle_sips[3]) ) / (1 + coef_mle_sips[2] * x_matrix[kth, ]^(1/coef_mle_sips[3])  )
+    #   
+    #  fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(1/coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(1/coef_mle_sips[3])  )
+    #  # fitted_values_mle_sips <-  ( coef_mle_sips[1] * exp(coef_mle_sips[2]) *  x_matrix[kth, ]^(coef_mle_sips[3]) ) / (1 + exp(coef_mle_sips[2]) * x_matrix[kth, ]^(coef_mle_sips[3])  )
+    #   ## reverse 1/n
+    #   # fitted values based on mle for plotting
+    # 
+    # 
+    #   # 3-5 MLE Confidence band
+    #   if( input$conf_level == "95%"){
+    #     conf_val <- qnorm(0.975)
+    #   } else if( input$conf_level == "90%"){
+    #     conf_val <- qnorm(0.95)
+    #   }  else if (input$conf_level == "80%"){
+    #     conf_val<- qnorm(0.90)
+    #   } else if(input$conf_level == "99%"){
+    #     conf_val<- qnorm(0.995)
+    #   }
+    # 
+    #   Cov_est_sips <- solve(fit_mle_sips$hessian)
+    #   c_pred_vec <- x_matrix[kth, ]
+    # 
+    #   mle_band_upper_sips <- rep(NA, length(c_pred_vec))
+    #   mle_band_lower_sips <- rep(NA, length(c_pred_vec))
+    # 
+    #   for(i in 1:length(c_pred_vec)){
+    #     c_now <- c_pred_vec[i]
+    #     se_est <- se_for_CI_mle_sips(Q = Q_est_mle_sips, K_new=coef_mle_sips[2],
+    #                                  n=n_est_mle_sips, C=c_now,
+    #                             sigma = sigma_est_mle_sips, cov_mat=Cov_est_sips
+    #     )
+    # 
+    #     term <- conf_val * se_est
+    #     mle_band_upper_sips[i] <- fitted_values_mle_sips[i] + term
+    #     mle_band_lower_sips[i] <- fitted_values_mle_sips[i] - term
+    #   }
+    # 
+    # 
+    # 
+    # 
+    # 
+    #   ### 4. Plot
+    #   mle_sips_max <- max(mle_band_upper_sips, na.rm = T)
+    #   max_final <- max(c(unlist(data_kth[-1,2]),
+    #                      mle_sips_max,
+    #                      mle_band_upper_lan ))
+    # 
+    #   # main plot
+    #   plot(x_matrix[kth, ], fitted_values_mle_sips, type='l', xlab = 'Cw.mol.l', ylab = 'q.mol.kg',
+    #        ylim = c(0, max_final ), lwd = 2, col= 'blue',
+    #        main=paste( value[2], ", Data ID: ", value[1]))
+    # 
+    # 
+    #   # Confidence band
+    #   lines(c_pred_vec, mle_band_upper_sips, col="blue", lty=3, lwd=2)
+    #   lines(c_pred_vec, mle_band_lower_sips, col="blue", lty=3, lwd=2)
+    # 
+    # 
+    #   lines(c_pred_vec, fitted_values_mle_lan, col="red", lty=1, lwd=2)
+    # 
+    #   lines(c_pred_vec, mle_band_upper_lan, col="red", lty=3, lwd=2)
+    #   lines(c_pred_vec, mle_band_lower_lan, col="red", lty=3, lwd=2)
+    #   lines(c(x_com_vec), c(Y_com_pred), col="green", lty=2, lwd=2)
+    # 
+    #   # observed data points
+    #   points(data_set[,(2* kth -1):(2*kth)])
+    # 
+    # 
+    #   legend("bottomright",legend=c(
+    #     paste("Langmuir : Qm=",
+    #           signif(Q_est_mle_lan,6),
+    #           ", Kd=",round(K_est_mle_lan),
+    #           ", MSE=",format(mse_lan,scientific = T),sep=""),
+    #     paste("Sips : Qn=",
+    #           signif(Q_est_mle_sips,6),
+    #           ", Kd=",signif(K_est_mle_sips,6),
+    #           ", n=", signif(n_est_mle_sips,6),
+    #           ", MSE=",format(mse_sips,scientific = T),sep=""),
+    #     paste( input$conf_level, " Confidence band of Langmuir MLE"),
+    #     paste( input$conf_level, " Confidence band of Sips MLE"),
+    #     paste("Commercial Product : Qm=",
+    #           signif(Q_com,6),
+    #           ", Kd=",round(K_com),
+    #           ", MSE=",format(mse_0, scientific = T),sep=""),
+    #     paste("observed point")
+    #   ),
+    #   bty='n',
+    #   col=c("red","blue","red", "blue", "green", "black"),lwd=c(2, 2, 2, 2,2, NA),lty=c(1,1,3,3,2,NA),
+    #   density = c(0, 0, 0, 0, 0, NA), fill = c("red", "blue","red", "blue", "green", "white"),
+    #   border=c(NA, NA, NA, NA, NA, NA),
+    #   pch = c(NA, NA, NA, NA, NA, 1),
+    #   cex=1
+    #   )
+    # })
+    # 
+    # 
+    # 
+    # output$mle_table_sips <- renderTable({
+    #   value <- inputVar()
+    # 
+    #   kth <- as.numeric(value[1])
+    # 
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    # 
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    # 
+    # 
+    #   ### 0. Commerical product
+    # 
+    # 
+    #   ### 2. Freundlich model
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   ### 2. MLE
+    #   # 2-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], 
+    #                           log( coef_lm[1] / coef_lm[2],),
+    #                           #( coef_lm[1] / coef_lm[2] ),
+    #                           
+    #                           1,
+    #                           #1/2,
+    #                           sqrt(sigma2_initial))
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_sips <- optim(fn = negLogLikelihood_sips,
+    #                           par = initial_value_mle,
+    #                           hessian = T,
+    #                           method = value[5],
+    #                           data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_sips <- fit_mle_sips$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_sips <- nlm(f = negLogLikelihood_sips,
+    #                         p = initial_value_mle,
+    #                         hessian = T,
+    #                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_sips <- fit_mle_sips$estimate
+    # 
+    #   }
+    # 
+    #   # 3-3 get estimates
+    #   Q_est_mle_sips <- coef_mle_sips[1]
+    #   # K_est_mle_sips <-  coef_mle_sips[2] 
+    #   
+    #   K_est_mle_sips <- exp( coef_mle_sips[2] )
+    #   n_est_mle_sips <- coef_mle_sips[3]
+    #   # n_est_mle_sips <- 1/ coef_mle_sips[3]
+    #   ## reverse 1/n
+    #   sigma_est_mle_sips <- coef_mle_sips[4]
+    # 
+    # 
+    #   Cov_est <- solve(fit_mle_sips$hessian)
+    #   std_error1 <- sqrt(Cov_est[1,1]  )
+    #   std_error2 <- sqrt(Cov_est[2,2]  )
+    #   std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle_sips[2]))^(2) )
+    #   std_error3 <- sqrt(Cov_est[3,3])
+    #  #  std_error3_reverse <- sqrt(Cov_est[3,3] * (-1 * (coef_mle[3])^(-2))^(2)  )
+    #   
+    #   std_error4 <- sqrt(Cov_est[4,4]  )
+    # 
+    # 
+    #   if( input$conf_level == "95%"){
+    #     conf_val <- qnorm(0.975)
+    #   } else if( input$conf_level == "90%"){
+    #     conf_val <- qnorm(0.95)
+    #   }  else if (input$conf_level == "80%"){
+    #     conf_val<- qnorm(0.90)
+    #   } else if (input$conf_level == "99%"){
+    #     conf_val<- qnorm(0.995)
+    #   }
+    # 
+    #   MLE <- c(coef_mle_sips[1], 
+    #            coef_mle_sips[2], 
+    #            exp(coef_mle_sips[2]), 
+    #            coef_mle_sips[3],
+    #            # coef_mle_sips[3], 
+    #           #  1/coef_mle_sips[3], 
+    #            ## revserse 1/n
+    #            coef_mle_sips[4])
+    #   SE <- c(std_error1, 
+    #           std_error2, 
+    #           std_error2_delta_method,
+    #           std_error3,
+    #           # std_error3_reverse,
+    #           std_error4)
+    #   upper <- c(coef_mle_sips[1] + conf_val * std_error1,
+    #              coef_mle_sips[2] + conf_val * std_error2,
+    #              exp(coef_mle_sips[2] + conf_val * std_error2),
+    #              # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
+    #              coef_mle_sips[3] + conf_val * std_error2,
+    #              
+    #              # coef_mle_sips[3] + conf_val * std_error3,
+    #             #  1/ (coef_mle_sips[3] - conf_val * std_error3) ,
+    #              ## reverse 1/n
+    #              coef_mle_sips[4] + conf_val * std_error4
+    #              )
+    #   lower <- c(coef_mle_sips[1] - conf_val * std_error1,
+    #              coef_mle_sips[2] - conf_val * std_error2,
+    #             exp(coef_mle_sips[2] - conf_val * std_error2),
+    #              # exp(coef_mle[2]) - conf_val * std_error2_delta_method,
+    #              coef_mle_sips[3] - conf_val * std_error2,
+    #              # coef_mle_sips[3] - conf_val * std_error3,
+    #              # 1/(coef_mle_sips[3] + conf_val * std_error3 ),
+    #              ## reverse 1/n
+    #              coef_mle_sips[4] - conf_val * std_error4
+    #              )
+    # 
+    # #  table_result <- data.frame(Par = c("Qmax", "K", "n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+    #  #                            Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+    #   
+    # 
+    #   table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+    #                              Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+    #   
+    #   # table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "nprime","n","sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+    #   #                            Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+    #   # 
+    # 
+    # },
+    # bordered=T)
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # 
+    # output$hessian_num_original_inverse_sips <- renderTable({
+    #   value <- inputVar()
+    # 
+    #   kth <- as.numeric(value[1])
+    # 
+    #   data_kth_wNA <- data_set[,(2* kth -1):(2*kth) ]
+    #   data_kth <- data_kth_wNA[!is.na(data_kth_wNA[,1]),]
+    # 
+    #   n_data_kth <- dim(data_kth)[1]
+    #   x_matrix[kth, ] <- (0:100)/100*max( data_kth[,1] )
+    #   initial_values <- data_meta[ kth, c(9,10)]
+    #   location_error_vec <- NA
+    #   colnames(data_kth) <- c("Cw.mol.l", "q.mol.kg")
+    # 
+    # 
+    #   ### 0. Commerical product
+    # 
+    # 
+    #   ### 2. Freundlich model
+    #   ## 2-1 initial value
+    #   Y_trans <-  (1 / data_kth[-1,2] )
+    #   X_trans <- (1 / data_kth[-1,1] )
+    # 
+    #   data_trans <- data.frame(q.mol.kg = Y_trans,
+    #                            Cw.mol.l = X_trans)
+    # 
+    #   fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+    #   coef_lm <- fit_lm$coefficients
+    #   Q_est_lm <- 1 / coef_lm[1]
+    #   K_est_lm <- ( coef_lm[1] / coef_lm[2] )
+    # 
+    #   # Compute mse
+    #   fitted_values_lm <- coef_lm[1] + coef_lm[2] * data_kth[-1,1]
+    # 
+    #   res_lm <- data_kth[-1,2] - 1/fitted_values_lm
+    #   mse_2 <- (sum(res_lm^(2)) ) / (n_data_kth  )
+    # 
+    # 
+    #   ### 2. MLE
+    #   # 2-1 initial values from the previous linear model
+    #   sigma2_initial <- (sum(res_lm^(2)) ) / (n_data_kth -1  )
+    #   initial_value_mle <- c( 1/coef_lm[1], 
+    #                           log( coef_lm[1] / coef_lm[2],),
+    #                           1,
+    #                           sqrt(sigma2_initial))
+    # 
+    #   # 3-2 fit a new model of reparameterization for Kd
+    #   if(value[4] == "optim"){
+    #     fit_mle_sips <- optim(fn = negLogLikelihood_sips,
+    #                           par = initial_value_mle,
+    #                           hessian = T,
+    #                           method = value[5],
+    #                           data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    #     coef_mle_sips <- fit_mle_sips$par
+    # 
+    #   } else if(value[4] == "nlm"){
+    #     fit_mle_sips <- nlm(f = negLogLikelihood_sips,
+    #                         p = initial_value_mle,
+    #                         hessian = T,
+    #                         data_x = data.matrix(data_kth[,1]) , data_y = data.matrix(data_kth[,2])
+    #     )
+    # 
+    #     coef_mle_sips <- fit_mle_sips$estimate
+    # 
+    #   }
+    # 
+    # 
+    # 
+    #   solve(fit_mle_sips$hessian)
+    # 
+    # },
+    # colnames = F,
+    # digits=-2,
+    # bordered = T
+    # )
 
 
 
