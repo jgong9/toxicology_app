@@ -270,7 +270,7 @@ ui <- tagList(
   tags$head(HTML("<title>Toxicology</title> <link rel='icon' type=image/gif/png href='warning.png'>")),
   
   navbarPage(
-        title = span("Toxicant Analysis", style="font-weight: bold; font-weight: 900;"), 
+        title = span("Toxin Analysis", style="font-weight: bold; font-weight: 900;"), 
         theme = shinytheme("flatly"),
        # shinythemes::themeSelector(),
        tabPanel("Model",
@@ -305,15 +305,15 @@ ui <- tagList(
                   column(
                     h4(strong("Isotherm Models")),
                     p( strong("1. Langmuir model"),
-                       withMathJax("$$ q = \\frac{Q_{max} K_{d} C}{1+K_{d} C }$$"),
-                       "Details about the model including what each parameter means",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
+                       withMathJax("$$ q = \\frac{Q_{max} K_{d} C_{W}}{1+K_{d} C_{W} },$$"),
+                       "where \\(q\\) is toxin absorbed (mol/kg), \\(Q_{max}\\) is the maximum capacity (mol/kg), \\(K_{d}\\) is a distribution constant, and \\(C_{W}\\) is the toxin equilibirum conncentration.",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
                     br(),
                     
                     p( strong("2. Freundlich model"),
-                       withMathJax("$$ q = K_{F} \\cdot C^{\\frac{1}{n}} $$"),
-                       #   withMathJax("$$ q = \\frac{Q_{max} K_{d} C}{1+K_{d} C }$$"),
+                       withMathJax("$$ q = K_{F} \\cdot C_{W}^{\\frac{1}{n}} $$"),
+                       #   withMathJax("$$ q = \\frac{Q_{max} K_{d} C}{1+K_{d} C },$$"),
                        
-                       "Details about the model including what each parameter means",
+                       "where \\(q\\) is toxin absorbed (mol/kg), \\(K_{F}\\) is the Freundlich constant, \\(\\frac{1}{n}\\) is the measure of intensity, and \\(C_{W}\\) is the toxin equilibirum conncentration.",
                        style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"),
                     br(),
                     # p(strong("3. Sips model"),
@@ -390,8 +390,8 @@ ui <- tagList(
                                 h4("1-1. Non-transformed OLS vs Transformed MLE"),
                                 plotOutput("trajectoryPlot"),
                                 withMathJax("For MLE, we assume \n
-                                     $$ q = \\frac{Q_{max} \\cdot \\exp{K^{\\prime}} \\cdot C}{(1+ \\exp{K^{\\prime}} \\cdot C)} + \\varepsilon, $$
-                                     \n where \\(K = \\exp(K^{\\prime})\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
+                                     $$ q = \\frac{Q_{max} \\cdot \\exp{K_{d}^{\\prime}} \\cdot C_{W}}{(1+ \\exp{K_{d}^{\\prime}} \\cdot C_{W})} + \\varepsilon, $$
+                                     \n where \\(K_{d} = \\exp(K_{d}^{\\prime})\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
                                      \n"),
                                 br(),
                                 br(),
@@ -417,7 +417,7 @@ ui <- tagList(
                                 h4("2-1. Trajectory plot"),
                                 plotOutput("plot_fre"),
                                 withMathJax("For MLE, we assume \n
-                                     $$ q = \\exp{K^{\\prime}_{F}} \\cdot C^{\\frac{1}{n}}+ \\varepsilon, $$
+                                     $$ q = \\exp{K^{\\prime}_{F}} \\cdot C_{W}^{\\frac{1}{n}}+ \\varepsilon, $$
                                      \n where \\(K_{F} = \\exp{K^{\\prime}_{F}}\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
                                      \n"),
                                 br(),
@@ -651,7 +651,7 @@ server <- function(input, output) {
       max_final <- max(c(max_y, Y_original_pred, unlist(data_kth[-1,2]), mle_band_upper ))
       
       # main plot
-      plot(x_matrix[kth, ], est_curve_origin, type='l', xlab = 'Cw.mol.l', ylab = 'q.mol.kg',
+      plot(x_matrix[kth, ], est_curve_origin, type='l', xlab = 'Cw (mol/l)', ylab = 'q (mol/kg)',
            ylim = c(0, max_final ), lwd = 2, col= 'blue',
            main=paste("NonTrans-NonLinear-OLS vs Trans-NonLinear-MLE; ", value[2], ", Data ID: ", value[1]))
       lines(c(x_com_vec), c(Y_com_pred), col="green", lty=2, lwd=2)
@@ -679,7 +679,7 @@ server <- function(input, output) {
               ", Kd=",round(K_com),
               ", MSE=",format(mse_0,scientific = T),sep=""),
         paste( input$conf_level, " Confidence band of MLE"),
-        paste("observed point")
+        paste("Observed data point")
       ),
       bty='n',
       col=c("blue","red","green", "black", "black"),lwd=c(2, 2, 2, 2, NA),lty=c(1,2,3, 3,NA),
@@ -819,7 +819,7 @@ server <- function(input, output) {
       
       
 
-      table_result <- data.frame(Par = c("Qmax", "Kprime", "K", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+      table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
                                  Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
       
 
@@ -1446,7 +1446,7 @@ server <- function(input, output) {
       max_final <- max(c(unlist(data_kth[-1,2]), mle_band_upper_fre, mle_band_upper_lan ))
       
       # main plot
-      plot(x_matrix[kth, ], fitted_values_mle_fre, type='l', xlab = 'Cw.mol.l', ylab = 'q.mol.kg',
+      plot(x_matrix[kth, ], fitted_values_mle_fre, type='l', xlab = 'Cw (mol/l)', ylab = 'q (mol/kg)',
            ylim = c(0, max_final ), lwd = 2, col= 'blue',
            main=paste( value[2], ", Data ID: ", value[1]))
       
@@ -1481,7 +1481,7 @@ server <- function(input, output) {
               signif(Q_com,6),
               ", Kd=",round(K_com),
               ", MSE=",format(mse_0, scientific = T),sep=""),
-        paste("observed point")
+        paste("Observed data point")
       ),
       bty='n',
       col=c("red","blue","red", "blue", "green", "black"),lwd=c(2, 2, 2, 2,2, NA),lty=c(1,1,3,3,2,NA),
@@ -1596,7 +1596,7 @@ server <- function(input, output) {
                   coef_mle[3] - conf_val * std_error3 )
 
 
-      table_result <- data.frame(Par = c("K_F_prime", "K_F", "n", "sigma"),
+      table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
                                  MLE = format(MLE, scientific = T),
                                  se = format( SE, scientific = T),
                                  Upper=format(upper, scientific = T),
