@@ -603,8 +603,8 @@ ui <- tagList(
 #.navbar-brand {margin-left: 0px;}")
        ), ## end of tab 4  
 
-      #  navbarMenu("More",
-               tabPanel("More",
+      navbarMenu("More",
+               tabPanel("Resources",
                         br(),
                         br(),
                         fluidRow(
@@ -624,7 +624,7 @@ ui <- tagList(
                         
                           
                         column(
-                              box(title = "Personal Shiny Server", HTML("This app is also accessible through Shiny Server on Raspberry Pi. <br/>  <br/>"), 
+                              box(title = "Personal Shiny Server", HTML("This app is accessible through Shiny Server on Raspberry Pi. <br/>  <br/>"), 
                                   width=15,
                                   column(12, align="center",
                                   actionButton(inputId='rasp_button', label=HTML("<img src='raspberry_pi_logo.png' height='40'/> &nbsp; Visit Shiny Server"), 
@@ -663,16 +663,15 @@ ui <- tagList(
                     ), width=5)
                   ),
                   style='padding-left:20px; padding-right:10px; padding-top:0px; padding-bottom:5px'
+                ),
+                tabPanel("About",
+                         fluidPage(
+                           includeMarkdown("README.md")
+                         ),
+                         style='padding-left:30px; padding-right:30px; padding-top:10px; padding-bottom:5px',
+
                 )
-                # tabPanel("About",
-                #          fluidPage(
-                #            br(),
-                #            includeMarkdown("README.md")
-                #          ),
-                #          style='padding-left:20px; padding-right:10px; padding-top:0px; padding-bottom:5px',
-                #          
-                # )
-        # ) ## end of tab 4
+         ) ## end of tab 4
 
     ) # end of navbarPage
 ) # end of tagList
