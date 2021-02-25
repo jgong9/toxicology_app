@@ -15,6 +15,8 @@ library(shiny)
 library(shinythemes)
 library(DT)
 library(latex2exp)
+library(shinydashboard)
+library(markdown)
 
 
 ## For model fitting
@@ -262,10 +264,113 @@ se_for_CI_mle_sips_linear <- function(Q, K, n, C, sigma, cov_mat){
 }
 
 
+sidebar <- dashboardSidebar(
+  sidebarMenu(id="tabs",
+              menuItem("Initial values", tabName="initial", icon=icon("file-text-o"), selected=T),
+              menuItem("Confidence envelopes", tabName = "conf", icon=icon("line-chart"), selected=F),
+              menuItem("AIC", tabName = "aic", icon=icon("pencil"), selected=F),
+              menuItem("Question", tabName = "ques", icon = icon("question"))
+  )
+)
+
+body <- dashboardBody(
+  tabItems(
+    tabItem(tabName = "initial",
+              br(),
+
+            
+              fluidRow(
+                column(
+                  p(
+                    strong("1. Langmuir model"),
+                    br(),
+                    br(),
+                       "In order to get the initial values for \\(Q_{max}\\), \\(K_{d}\\), and \\(\\sigma^{2}\\), we transform them as 
+                       \\(Q^{\\star}_{max} = Q_{max}^{-1}\\), \\(K^{\\star}_{d} = K_{d}^{-1}\\). Let \\(Y^{\\star}=q^{-1}\\) and \\(C^{\\star}_{W}= C^{-1}_{W}\\). Then, ",
+                       br(),
+                       br(),
+                       " \\( q = \\frac{Q_{max} K_{d} C_{W}}{1 + K_{d} C_{W}} \\Longleftrightarrow q = \\frac{Q_{max} C_{W}}{K_{d}^{\\star} +  C_{W}}\\)",
+                       br(),
+                      "\\(\\Longrightarrow \\frac{1-q}{q} = \\frac{K_{d}^{\\star} + C_{W} - Q_{max}C_{W}}{Q_{max}C_{W}}\\)",
+                      br(),
+                      "\\(\\Longleftrightarrow \\frac{1-q}{q} = Q_{max}^{\\star} + K_{d}^{\\star} Q_{max}^{\\star} C_{W}^{\\star} - 1\\)",
+                      br(),
+                      "\\(\\Longrightarrow Y^{\\star} =  Q_{max}^{\\star} + K_{d}^{\\star} Q_{max}^{\\star} C_{W}^{\\star}\\).",
+                      br(),
+                    br(),
+                      "Since we now have a linear model with an intercept \\(Q_{max}^{\\star}\\) and a slope \\(K_{d}^{\\star}Q_{max}^{\\star}\\), we can apply the ordinary least square (OLS) method to estimate both of them and get the initial values. 
+                      Specifically, we set \\(\\hat{Q}_{max} = \\frac{1}{\\hat{Q}^{\\star}_{max}}\\) and \\(\\hat{K}_{d}=\\frac{\\hat{Q}^{\\star}_{max}}{\\widehat{K_{d}^{\\star} Q_{max}^{\\star}}}\\). For \\(\\sigma^{2}\\), we adopt the sum of squared errors \\(\\hat{\\sigma}^{2} = \\sum^{n}_{i=1} ( y^{\\star}_{i} - \\hat{y}^{\\star}_{i}  ). \\)", 
+                      style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"
+                    ),
+                  br(),
+                  p(
+                    strong("2. Freundlich model"),
+                    br(),
+                    br(),
+                    "Similarly, we reparameterize the Freundlich model with \\(q^{\\star}=\\log{q}\\), \\(C^{\\star}_{W}=\\log{C_{W}}\\), \\(K^{\\star}_{F} = \\log{K_{F}}\\), and \\(n^{\\star} = \\frac{1}{n}\\) . Then, ",
+                    br(),
+                    br(),
+                    "\\( q^{\\star} = K^{\\star}_{F} + n^{\\star} C^{\\star}_{W}\\).",
+                    br(),
+                    br(),
+                    "Since we now have a linear model with an intercept \\( K^{\\star}_{F}\\) and a slope \\(n^{\\star}\\), we can apply OLS again to estimate both of them and get the initial values. 
+                      In particular, we set \\(\\hat{K}_{F} = exp(\\hat{K}^{\\star}_{F}) \\) and \\(\\hat{n}= \\frac{1}{\\hat{n}^{\\star} }\\). For \\(\\sigma^{2}\\), we adopt the sum of squared errors \\(\\hat{\\sigma}^{2} = \\sum^{n}_{i=1} ( q^{\\star}_{i} - \\hat{q}^{\\star}_{i}  ). \\)", 
+                    style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"
+                ),
+                  width=12),
+            ),
+    ), # end of tabItme 1
+    tabItem(tabName = "conf",
+            br(),
+            
+            fluidRow(
+              column(
+                p(
+                  strong("Delta method"),
+                  br(),
+                  br(),
+                  "Let \\( \\mathbf{\\theta}_{0} = [Q_{max}, \\: K^{\\prime}_{d}, \\: \\sigma^{2} ]\\) and denote its maximum likelihood estimator (MLE) by \\( \\hat{\\mathbf{\\theta}}_{MLE}\\). Since the aymptotic distribution of MLE is multivariate normal, we know ",
+                  "$$ \\sqrt{n}( \\hat{\\mathbf{\\theta}}_{MLE} - \\mathbf{\\theta}_{0} ) \\; \\overset{\\cdot}{\\sim}\\; N( \\mathbf{0}, \\mathbf{I}^{-1}(\\mathbf{\\theta}_{0}) ))$$",
+                  "where \\(\\mathbf{I}\\) is the Fisher information matrix. Next, define a continuous function \\( g(\\mathbf{\\theta}_{0})=\\frac{Q_{max}exp(K^{\\prime}_{d}) C_{W} }{1+exp(K^{\\prime}_{d})C_{W} }\\). Since its partial derivaties exist, the delta method is applicable and 
+                  we can get the \\((1-\\alpha)\\)% confidence envelops as below.",
+                  "$$ g(\\hat{\\mathbf{\\theta}}_{MLE}) \\pm z_{\\frac{\\alpha}{2}} \\times \\sqrt{ \\mathbf{g}^{\\prime T}(\\hat{\\mathbf{\\theta}}_{MLE}) \\mathbf{H}^{-1}(\\hat{\\mathbf{\\theta}}_{MLE}) \\mathbf{g}^{\\prime}(\\hat{\\mathbf{\\theta}}_{MLE})  }, $$",
+                  "where \\(\\mathbf{g}^{\\prime}\\) is derivative of the function \\(g\\), \\(\\mathbf{H}\\) is numerical hessian matrix\\), and \\(\\alpha\\) is a given significance level with corresponding critical value \\(z\\). ",
+                  br(),
+                  br(),
+                  "Similarly, the confidence envelops for the Freundlich model can be obtained through the delta method with a continuous function \\(h(\\mathbf{\\theta})=exp(K_{F}) C^{\\frac{1}{n}}_{W}\\).",
+                  style="text-align:justify;color:black;background-color:#E6F2E4;padding:15px;border-radius:10px"
+                ),
+                width=12),
+            )
+
+    ), # end of tabItem 2
+    tabItem(tabName = "aic",
+            fluidRow(
+              column(
+                br(),
+
+                
+                p(
+                  strong("Akaike information criterion (AIC)"),
+                  br(),
+                  br(),
+                  "Recall the models with Gaussian random error. Let k be the number of parameters in each model and \\(L\\)\ the likelihood function for the model. Then the AIC value of the model is defined as ",
+                  "$$ \\text{AIC} = 2k - \\ln{L(\\hat{\\mathbf{\\theta}}_{MLE} )}.$$",
+                  style="text-align:justify;color:black;background-color:#E4F6FA;padding:15px;border-radius:10px"
+                ),
+                width=12),
+            )
+    )
+    
+  ), # end of tabItems
+) # end of dashboardBody
+
 
 
 
 ui <- tagList(
+  tags$style("@import url(https://use.fontawesome.com/releases/v5.6.0/css/all.css);"),
+  
  # tags$head(HTML("<title>Toxicant Analysis</title>")),
   tags$head(HTML("<title>Toxicology</title> <link rel='icon' type=image/gif/png href='warning.png'>")),
   
@@ -474,16 +579,65 @@ ui <- tagList(
    
 
         tabPanel("Data",
+                 style='padding-left:10px; padding-right:10px; padding-top:10px; padding-bottom:5px',
+                 
                  dataTableOutput("table")
         ), ## end of tab 3  
+  
+       tabPanel("Method",
+                
+              dashboardPage(
+                        dashboardHeader(title = "Soilprofile", titleWidth = 0, disable =T
+                                        ),
+                        sidebar,
+                        body
+                      ),
+              # style='padding-left:0px; padding-right:10px; padding-top:0px; padding-bottom:10px;
+              # margin-top:-50px; margin-bottom:0px, margin-left:0px',
+              tags$style(type = "text/css", ".container-fluid {padding-left:0px;
+                    padding-right:0px;}"),
+              tags$style(type = "text/css", ".navbar {margin-bottom: .0px;padding-left:20px}"),
+      #        tags$style(type = "text/css", ".container-fluid .navbar-header
+#.navbar-brand {margin-left: 0px;}")
+       ), ## end of tab 4  
 
-        navbarMenu("More",
-               tabPanel("Table",
-                #    dataTableOutput("table")
-               ),
-                tabPanel("About",
+      #  navbarMenu("More",
+               tabPanel("More",
+                        br(),
+                        br(),
+                        fluidRow(
+                          column(
+                          box(title = "Github", HTML("R Shiny code is on github. <br/>"), width=15,
+                                              actionButton(inputId='ab1', label="Go to GitHub", 
+                                                                  icon = icon("github "), 
+                                                           style='padding:10px; font-size:140%',
+                                                           
+                                                                  onclick ="window.open('https://github.com/jgong9/toxicology_app', '_blank')")
+                          
+                        , status = "primary",solidHeader = T, collapsible = TRUE,
+                        ), width=5)
+                        ,
+                        column(
+                              box(title = "Personal Shiny Server", "This app is accessible through Shiny Server on Raspberry Pi.", 
+                                  width=15,
+                                  actionButton(inputId='ab2', label="Visit Joonho's shiny server", 
+                                               icon = icon("linux"), 
+                                               style='padding:10px; font-size:140%',
+                                               onclick ="window.open('http://174.99.0.141:9000/toxicology_app', '_blank')")
+                                  
+                                  , status = "success",solidHeader = T, collapsible = TRUE,
+                              ), width=5)
+                  ),  style='padding-left:20px; padding-right:10px; padding-top:0px; padding-bottom:5px'
                 )
-        ) ## end of tab 4
+                # tabPanel("About",
+                #          fluidPage(
+                #            br(),
+                #            includeMarkdown("README.md")
+                #          ),
+                #          style='padding-left:20px; padding-right:10px; padding-top:0px; padding-bottom:5px',
+                #          
+                # )
+        # ) ## end of tab 4
 
     ) # end of navbarPage
 ) # end of tagList
