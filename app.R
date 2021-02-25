@@ -268,8 +268,8 @@ sidebar <- dashboardSidebar(
   sidebarMenu(id="tabs",
               menuItem("Initial values", tabName="initial", icon=icon("file-text-o"), selected=T),
               menuItem("Confidence envelopes", tabName = "conf", icon=icon("line-chart"), selected=F),
-              menuItem("AIC", tabName = "aic", icon=icon("pencil"), selected=F),
-              menuItem("Question", tabName = "ques", icon = icon("question"))
+              menuItem("AIC", tabName = "aic", icon=icon("pencil"), selected=F)
+            #  menuItem("Question", tabName = "ques", icon = icon("question"))
   )
 )
 
@@ -379,6 +379,8 @@ ui <- tagList(
         theme = shinytheme("flatly"),
        # shinythemes::themeSelector(),
        tabPanel("Model",
+                style='padding-left:10px; padding-right:25px; padding-top:10px; padding-bottom:5px',
+                
                 fluidRow(
                   column(
                     br(),
@@ -608,11 +610,11 @@ ui <- tagList(
                         fluidRow(
                           column("",width=1),
                           column(
-                          box(title = "Github", HTML("R Shiny code is on github. <br/>  <br/>"), width=15,
+                          box(title = "Github", HTML("R Shiny code is available on github. <br/>  <br/>"), width=15,
                               column(12,align="center",
-                                              actionButton(inputId='ab1', label=HTML("<img src='github_logo.png' width='70'/> &nbsp; Go to GitHub"), 
+                                              actionButton(inputId='ab1', label=HTML("<img src='github_logo.png' height='40'/> &nbsp; Go to GitHub"), 
                                                          #         icon = icon("github "), 
-                                                           style='padding:10px; font-size:140%',
+                                                           style='padding:10px; font-size:160%',
                                                            
                                                                   onclick ="window.open('https://github.com/jgong9/toxicology_app', '_blank')")
                               )
@@ -622,17 +624,45 @@ ui <- tagList(
                         
                           
                         column(
-                              box(title = "Personal Shiny Server", HTML("This app is accessible through Shiny Server on Raspberry Pi. <br/>  <br/>"), 
+                              box(title = "Personal Shiny Server", HTML("This app is also accessible through Shiny Server on Raspberry Pi. <br/>  <br/>"), 
                                   width=15,
                                   column(12, align="center",
-                                  actionButton(inputId='rasp_button', label=HTML("<img src='raspberry_pi_logo.png' width='50'/> &nbsp; Visit Joonho's Shiny server"), 
+                                  actionButton(inputId='rasp_button', label=HTML("<img src='raspberry_pi_logo.png' height='40'/> &nbsp; Visit Shiny Server"), 
                                             #   icon = icon("linux"), 
-                                               style='padding:10px; font-size:140%',
+                                               style='padding:10px; font-size:160%',
                                                onclick ="window.open('http://174.99.0.141:9000/toxicology_app', '_blank')")
                                   
-                                 ) , status = "success",solidHeader = T, collapsible = TRUE,
+                                 ) , status = "danger",solidHeader = T, collapsible = TRUE,
                               ), width=5)
-                  ),  style='padding-left:20px; padding-right:10px; padding-top:0px; padding-bottom:5px'
+                  ),  
+                  fluidRow(
+                    column("",width=1),
+                    column(
+                      box(title = "Contact", HTML("Contact me for any questions or inquiries. <br/>  <br/>"), 
+                          width=15,
+                          column(12, align="center",
+                                 a(actionButton(inputId = "email2", label = HTML("&nbsp; Email Joonho Gong"), 
+                                                icon = icon("envelope", lib = "font-awesome"),
+                                                style='padding:10px; font-size:160%')
+                                 ,
+                                 href="mailto:jgong9@ncsu.edu"
+                                 )
+                          ) , status = "warning",solidHeader = T, collapsible = TRUE,
+                      ), width=5)
+                  ,  
+                  column(
+                    box(title = "R Shiny", HTML("This app is available with Shinyapps.io <br/>  <br/>"), width=15,
+                        column(12,align="center",
+                               actionButton(inputId='ab1', label=HTML("<img src='rstudio_logo3.png' height='40'/> &nbsp; Visit Shinyapps.io"), 
+                                            #         icon = icon("github "), 
+                                            style='padding:10px; font-size:160%',
+                                            
+                                            onclick ="window.open('https://jgong9.shinyapps.io/chemistry_app/', '_blank')")
+                        )
+                        , status = "info",solidHeader = T, collapsible = TRUE,
+                    ), width=5)
+                  ),
+                  style='padding-left:20px; padding-right:10px; padding-top:0px; padding-bottom:5px'
                 )
                 # tabPanel("About",
                 #          fluidPage(
