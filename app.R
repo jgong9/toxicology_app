@@ -317,7 +317,7 @@ body <- dashboardBody(
                       In particular, we set \\(\\hat{K}_{F} = exp(\\hat{K}^{\\star}_{F}) \\) and \\(\\hat{n}= \\frac{1}{\\hat{n}^{\\star} }\\). For \\(\\sigma^{2}\\), we adopt the sum of squared errors \\(\\hat{\\sigma}^{2} = \\sum^{n}_{i=1} ( q^{\\star}_{i} - \\hat{q}^{\\star}_{i}  ). \\)", 
                     style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"
                 ),
-                  width=12),
+                  width=11),
             ),
     ), # end of tabItme 1
     tabItem(tabName = "conf",
@@ -334,13 +334,13 @@ body <- dashboardBody(
                   "where \\(\\mathbf{I}\\) is the Fisher information matrix. Next, define a continuous function \\( g(\\mathbf{\\theta}_{0})=\\frac{Q_{max}exp(K^{\\prime}_{d}) C_{W} }{1+exp(K^{\\prime}_{d})C_{W} }\\). Since its partial derivaties exist, the delta method is applicable and 
                   we can get the \\((1-\\alpha)\\)% confidence envelops as below.",
                   "$$ g(\\hat{\\mathbf{\\theta}}_{MLE}) \\pm z_{\\frac{\\alpha}{2}} \\times \\sqrt{ \\mathbf{g}^{\\prime T}(\\hat{\\mathbf{\\theta}}_{MLE}) \\mathbf{H}^{-1}(\\hat{\\mathbf{\\theta}}_{MLE}) \\mathbf{g}^{\\prime}(\\hat{\\mathbf{\\theta}}_{MLE})  }, $$",
-                  "where \\(\\mathbf{g}^{\\prime}\\) is derivative of the function \\(g\\), \\(\\mathbf{H}\\) is numerical hessian matrix\\), and \\(\\alpha\\) is a given significance level with corresponding critical value \\(z\\). ",
+                  "where \\(\\mathbf{g}^{\\prime}\\) is derivative of the function \\(g\\), \\(\\mathbf{H}\\) is numerical hessian matrix, and \\(\\alpha\\) is a given significance level with corresponding critical value \\(z\\). ",
                   br(),
                   br(),
                   "Similarly, the confidence envelops for the Freundlich model can be obtained through the delta method with a continuous function \\(h(\\mathbf{\\theta})=exp(K_{F}) C^{\\frac{1}{n}}_{W}\\).",
-                  style="text-align:justify;color:black;background-color:#E6F2E4;padding:15px;border-radius:10px"
+                  style="text-align:justify;color:black;background-color:#D5F5E3;padding:15px;border-radius:10px"
                 ),
-                width=12),
+                width=11),
             )
 
     ), # end of tabItem 2
@@ -356,9 +356,9 @@ body <- dashboardBody(
                   br(),
                   "Recall the models with Gaussian random error. Let k be the number of parameters in each model and \\(L\\)\ the likelihood function for the model. Then the AIC value of the model is defined as ",
                   "$$ \\text{AIC} = 2k - \\ln{L(\\hat{\\mathbf{\\theta}}_{MLE} )}.$$",
-                  style="text-align:justify;color:black;background-color:#E4F6FA;padding:15px;border-radius:10px"
+                  style="text-align:justify;color:black;background-color:#D8E8F1;padding:15px;border-radius:10px"
                 ),
-                width=12),
+                width=11),
             )
     )
     
@@ -383,7 +383,7 @@ ui <- tagList(
                   column(
                     br(),
                     div( img(src="acs-logo.svg",width="169px",height="54px"),  align= "center"),
-                    p("For more information please see ",em("Wang et al. (2019)"),
+                    p("For more information, please see ",em("Wang et al. (2019)"),
                       br(),
                       a(href="https://pubs.acs.org/doi/10.1021/acsomega.9b02051", "Here",target="_blank",style = "color: blue;"),style="text-align:center;color:black"),
                     br(),
@@ -579,7 +579,7 @@ ui <- tagList(
    
 
         tabPanel("Data",
-                 style='padding-left:10px; padding-right:10px; padding-top:10px; padding-bottom:5px',
+                 style='padding-left:50px; padding-right:50px; padding-top:40px; padding-bottom:5px',
                  
                  dataTableOutput("table")
         ), ## end of tab 3  
@@ -587,7 +587,7 @@ ui <- tagList(
        tabPanel("Method",
                 
               dashboardPage(
-                        dashboardHeader(title = "Soilprofile", titleWidth = 0, disable =T
+                        dashboardHeader(title = NULL, titleWidth = 0, disable =T
                                         ),
                         sidebar,
                         body
@@ -606,26 +606,31 @@ ui <- tagList(
                         br(),
                         br(),
                         fluidRow(
+                          column("",width=1),
                           column(
-                          box(title = "Github", HTML("R Shiny code is on github. <br/>"), width=15,
-                                              actionButton(inputId='ab1', label="Go to GitHub", 
-                                                                  icon = icon("github "), 
+                          box(title = "Github", HTML("R Shiny code is on github. <br/>  <br/>"), width=15,
+                              column(12,align="center",
+                                              actionButton(inputId='ab1', label=HTML("<img src='github_logo.png' width='70'/> &nbsp; Go to GitHub"), 
+                                                         #         icon = icon("github "), 
                                                            style='padding:10px; font-size:140%',
                                                            
                                                                   onclick ="window.open('https://github.com/jgong9/toxicology_app', '_blank')")
-                          
+                              )
                         , status = "primary",solidHeader = T, collapsible = TRUE,
                         ), width=5)
                         ,
+                        
+                          
                         column(
-                              box(title = "Personal Shiny Server", "This app is accessible through Shiny Server on Raspberry Pi.", 
+                              box(title = "Personal Shiny Server", HTML("This app is accessible through Shiny Server on Raspberry Pi. <br/>  <br/>"), 
                                   width=15,
-                                  actionButton(inputId='ab2', label="Visit Joonho's shiny server", 
-                                               icon = icon("linux"), 
+                                  column(12, align="center",
+                                  actionButton(inputId='rasp_button', label=HTML("<img src='raspberry_pi_logo.png' width='50'/> &nbsp; Visit Joonho's Shiny server"), 
+                                            #   icon = icon("linux"), 
                                                style='padding:10px; font-size:140%',
                                                onclick ="window.open('http://174.99.0.141:9000/toxicology_app', '_blank')")
                                   
-                                  , status = "success",solidHeader = T, collapsible = TRUE,
+                                 ) , status = "success",solidHeader = T, collapsible = TRUE,
                               ), width=5)
                   ),  style='padding-left:20px; padding-right:10px; padding-top:0px; padding-bottom:5px'
                 )
