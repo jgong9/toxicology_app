@@ -4476,7 +4476,8 @@ server <- function(input, output) {
           lower_bound <- mle_band_lower
           
           
-          trajectory_result <- data.frame("fitted_values"=fitted_values,
+          trajectory_result <- data.frame("Cw_values"=x_vals,
+                                          "fitted_values"=fitted_values,
                                           "upper_bound"=upper_bound,
                                           "lower_bound"=lower_bound)
           
@@ -4622,7 +4623,8 @@ server <- function(input, output) {
           upper_bound <- mle_band_upper
           lower_bound <- mle_band_lower
           
-          trajectory_result <- data.frame("fitted_values"=fitted_values,
+          trajectory_result <- data.frame("Cw_values"=x_vals,
+                                          "fitted_values"=fitted_values,
                                           "upper_bound"=upper_bound,
                                           "lower_bound"=lower_bound)
           
@@ -4772,7 +4774,8 @@ server <- function(input, output) {
           lower_bound <- mle_band_lower_fre
           
           
-          trajectory_result <- data.frame("fitted_values"=fitted_values,
+          trajectory_result <- data.frame("Cw_values"=x_vals,
+                                          "fitted_values"=fitted_values,
                                           "upper_bound"=upper_bound,
                                           "lower_bound"=lower_bound)
           
@@ -4919,7 +4922,8 @@ server <- function(input, output) {
           upper_bound <- mle_band_upper_fre
           lower_bound <- mle_band_lower_fre
           
-          trajectory_result <- data.frame("fitted_values"=fitted_values,
+          trajectory_result <- data.frame("Cw_values"=x_vals,
+                                          "fitted_values"=fitted_values,
                                           "upper_bound"=upper_bound,
                                           "lower_bound"=lower_bound)
           
@@ -5112,7 +5116,8 @@ data_down_reactive <- reactive({
       lower_bound <- mle_band_lower
       
       
-      trajectory_result <- data.frame("fitted_values"=fitted_values,
+      trajectory_result <- data.frame("Cw_values"=x_vals,
+                                      "fitted_values"=fitted_values,
                                       "upper_bound"=upper_bound,
                                       "lower_bound"=lower_bound)
       
@@ -5258,7 +5263,8 @@ data_down_reactive <- reactive({
       upper_bound <- mle_band_upper
       lower_bound <- mle_band_lower
       
-      trajectory_result <- data.frame("fitted_values"=fitted_values,
+      trajectory_result <- data.frame("Cw_values"=x_vals,
+                                      "fitted_values"=fitted_values,
                                       "upper_bound"=upper_bound,
                                       "lower_bound"=lower_bound)
       
@@ -5408,7 +5414,8 @@ data_down_reactive <- reactive({
       lower_bound <- mle_band_lower_fre
       
       
-      trajectory_result <- data.frame("fitted_values"=fitted_values,
+      trajectory_result <- data.frame("Cw_values"=x_vals,
+                                      "fitted_values"=fitted_values,
                                       "upper_bound"=upper_bound,
                                       "lower_bound"=lower_bound)
       
@@ -5555,7 +5562,8 @@ data_down_reactive <- reactive({
       upper_bound <- mle_band_upper_fre
       lower_bound <- mle_band_lower_fre
       
-      trajectory_result <- data.frame("fitted_values"=fitted_values,
+      trajectory_result <- data.frame("Cw_values"=x_vals,
+                                      "fitted_values"=fitted_values,
                                       "upper_bound"=upper_bound,
                                       "lower_bound"=lower_bound)
       
