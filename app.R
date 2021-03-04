@@ -3405,6 +3405,9 @@ server <- function(input, output) {
     })
     
     
+    
+    
+    
     output$user_trajectoryPlot <- renderPlot({
       value <- inputVar()
       
@@ -4025,6 +4028,15 @@ server <- function(input, output) {
             
           }
           
+          ### MSE and AIC ###
+          Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+          res_mle <- user_data[,2] - Y_original_pred_mle
+          mse_lan <- (sum(res_mle^(2)) ) / (n_user_data  )
+          
+          AIC_lan <- 2 * length(coef_mle) + negLogLikelihood(coef_mle, data_x =  user_data[,1]  , data_y =  user_data[,2]  ) 
+          ###
+          
+          
           Q_est_mle <- coef_mle[1]
           K_est_mle <- exp( coef_mle[2] )
           sigma_est_mle <- coef_mle[3]
@@ -4062,7 +4074,10 @@ server <- function(input, output) {
           
           
           table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T),
+                                     AIC = c(format(AIC_lan, scientific = T), rep("",3) ),
+                                     MSE = c(format(mse_lan, scientific = T), rep("",3 ) )
+                                     )
           
           
         } else {
@@ -4116,6 +4131,15 @@ server <- function(input, output) {
           }
           
           
+          
+          ### MSE and AIC ###
+          Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+          res_mle <- user_data[,2] - Y_original_pred_mle
+          mse_lan <- (sum(res_mle^(2)) ) / (n_user_data  )
+          
+          AIC_lan <- 2 * length(coef_mle) + negLogLikelihood(coef_mle, data_x =  user_data[,1]  , data_y =  user_data[,2]  ) 
+          ###
+          
           Q_est_mle <- coef_mle[1]
           K_est_mle <- exp( coef_mle[2] )
           sigma_est_mle <- coef_mle[3]
@@ -4151,11 +4175,11 @@ server <- function(input, output) {
                      coef_mle[3] - conf_val * std_error3 )
           
           
-          
           table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-          
-          
+                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T),
+                                     AIC = c(format(AIC_lan, scientific = T), rep("",3) ),
+                                     MSE = c(format(mse_lan, scientific = T), rep("",3 ) )
+          )
         } # end of zeors == "No"
         
       } ## end of Langmuir
@@ -4208,6 +4232,14 @@ server <- function(input, output) {
             
           }
           
+          
+          ### MSE and AIC ###
+          Y_original_pred_mle_fre <-  exp(coef_mle[1]) * user_data[,1]^(1/coef_mle[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          
+          AIC_fre <- 2 * length(coef_mle) + negLogLikelihood_fre_trans(coef_mle, data_x = user_data[,1] , data_y = user_data[,2])
+          ###
 
           K_F_prime_est_mle_fre <- coef_mle[1]
           K_F_est_mle_fre <- exp(coef_mle[1])
@@ -4250,7 +4282,11 @@ server <- function(input, output) {
                                      MLE = format(MLE, scientific = T),
                                      se = format( SE, scientific = T),
                                      Upper=format(upper, scientific = T),
-                                     Lower=format(lower, scientific = T))
+                                     Lower=format(lower, scientific = T),
+                                     AIC = c(format(AIC_fre, scientific = T), rep("",3) ),
+                                     MSE = c(format(mse_fre, scientific = T), rep("",3 ) )
+                                     
+                                     )
         } else {
           
           ### Freundlich model
@@ -4301,6 +4337,14 @@ server <- function(input, output) {
           
           
           
+          ### MSE and AIC ###
+          Y_original_pred_mle_fre <-  exp(coef_mle[1]) * user_data[,1]^(1/coef_mle[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          
+          AIC_fre <- 2 * length(coef_mle) + negLogLikelihood_fre_trans(coef_mle, data_x = user_data[,1] , data_y = user_data[,2])
+          ###
+          
           K_F_prime_est_mle_fre <- coef_mle[1]
           K_F_est_mle_fre <- exp(coef_mle[1])
           
@@ -4337,12 +4381,17 @@ server <- function(input, output) {
                      coef_mle[2] - conf_val * std_error2, 
                      coef_mle[3] - conf_val * std_error3 )
           
-          
+          AIC_fre <- 2 * length(coef_mle) + negLogLikelihood_fre_trans(coef_mle, data_x = user_data[,1] , data_y = user_data[,2])
+
           table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
                                      MLE = format(MLE, scientific = T),
                                      se = format( SE, scientific = T),
                                      Upper=format(upper, scientific = T),
-                                     Lower=format(lower, scientific = T))
+                                     Lower=format(lower, scientific = T),
+                                     AIC = c(format(AIC_fre, scientific = T), rep("",3) ),
+                                     MSE = c(format(mse_fre, scientific = T), rep("",3 ) )
+                                     
+          )
         } #end of zeros == "No"
       } ## end of Freundlich
     },
@@ -4426,6 +4475,15 @@ server <- function(input, output) {
             
           }
           
+          ### MSE and AIC ###
+          Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+          res_mle <- user_data[,2] - Y_original_pred_mle
+          mse_lan <- (sum(res_mle^(2)) ) / (n_user_data  )
+          
+          AIC_lan <- 2 * length(coef_mle) + negLogLikelihood(coef_mle, data_x =  user_data[,1]  , data_y =  user_data[,2]  ) 
+          ###
+          
+          
           # 2-3 get estimates
           Q_est_mle <- coef_mle[1]
           K_est_mle <- exp( coef_mle[2] )
@@ -4520,9 +4578,10 @@ server <- function(input, output) {
           
           
           table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-          
-          
+                                       Upper=format(upper, scientific = T), Lower=format(lower, scientific = T),
+                                       AIC = c(format(AIC_lan, scientific = T), rep("",3) ),
+                                       MSE = c(format(mse_lan, scientific = T), rep("",3 ) )
+          )
           
         } else {
           
@@ -4574,6 +4633,14 @@ server <- function(input, output) {
             
           }
           
+          ### MSE and AIC ###
+          Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+          res_mle <- user_data[,2] - Y_original_pred_mle
+          mse_lan <- (sum(res_mle^(2)) ) / (n_user_data  )
+          
+          AIC_lan <- 2 * length(coef_mle) + negLogLikelihood(coef_mle, data_x =  user_data[,1]  , data_y =  user_data[,2]  ) 
+          ###
+          
           # 2-3 get estimates
           Q_est_mle <- coef_mle[1]
           K_est_mle <- exp( coef_mle[2] )
@@ -4667,8 +4734,10 @@ server <- function(input, output) {
           
           
           table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-          
+                                      Upper=format(upper, scientific = T), Lower=format(lower, scientific = T),
+                                      AIC = c(format(AIC_lan, scientific = T), rep("",3) ),
+                                      MSE = c(format(mse_lan, scientific = T), rep("",3 ) )
+          )
         } # end of zeors == "No"
         
       } ## end of Langmuir
@@ -4721,6 +4790,14 @@ server <- function(input, output) {
             
           }
           
+          ### MSE and AIC ###
+          Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          
+          AIC_fre <- 2 * length(coef_mle_fre) + negLogLikelihood_fre_trans(coef_mle_fre, data_x = user_data[,1] , data_y = user_data[,2])
+          ###
+          
           # 2-3 get estimates
           K_F_prime_est_mle_fre <- coef_mle_fre[1]
           K_F_est_mle_fre <- exp(coef_mle_fre[1])
@@ -4821,7 +4898,11 @@ server <- function(input, output) {
                                      MLE = format(MLE, scientific = T),
                                      se = format( SE, scientific = T),
                                      Upper=format(upper, scientific = T),
-                                     Lower=format(lower, scientific = T))
+                                     Lower=format(lower, scientific = T),
+                                     AIC = c(format(AIC_fre, scientific = T), rep("",3) ),
+                                     MSE = c(format(mse_fre, scientific = T), rep("",3 ) )
+                                     
+          )
         } else {
           
           ### Freundlich model
@@ -4870,6 +4951,14 @@ server <- function(input, output) {
             
           }
           
+          ### MSE and AIC ###
+          Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          
+          AIC_fre <- 2 * length(coef_mle_fre) + negLogLikelihood_fre_trans(coef_mle_fre, data_x = user_data[,1] , data_y = user_data[,2])
+          ###
+          
           # 2-3 get estimates
           K_F_prime_est_mle_fre <- coef_mle_fre[1]
           K_F_est_mle_fre <- exp(coef_mle_fre[1])
@@ -4969,7 +5058,11 @@ server <- function(input, output) {
                                      MLE = format(MLE, scientific = T),
                                      se = format( SE, scientific = T),
                                      Upper=format(upper, scientific = T),
-                                     Lower=format(lower, scientific = T))
+                                     Lower=format(lower, scientific = T),
+                                     AIC = c(format(AIC_fre, scientific = T), rep("",3) ),
+                                     MSE = c(format(mse_fre, scientific = T), rep("",3 ) )
+                                     
+          )
           
           
         } #end of zeros == "No"
@@ -5066,6 +5159,14 @@ data_down_reactive <- reactive({
         
       }
       
+      ### MSE and AIC ###
+      Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+      res_mle <- user_data[,2] - Y_original_pred_mle
+      mse_lan <- (sum(res_mle^(2)) ) / (n_user_data  )
+      
+      AIC_lan <- 2 * length(coef_mle) + negLogLikelihood(coef_mle, data_x =  user_data[,1]  , data_y =  user_data[,2]  ) 
+      ###
+      
       # 2-3 get estimates
       Q_est_mle <- coef_mle[1]
       K_est_mle <- exp( coef_mle[2] )
@@ -5160,7 +5261,10 @@ data_down_reactive <- reactive({
       
       
       table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T),
+                                 AIC = c(format(AIC_lan, scientific = T), rep("",3) ),
+                                 MSE = c(format(mse_lan, scientific = T), rep("",3 ) )
+      )
       
       
       
@@ -5214,6 +5318,15 @@ data_down_reactive <- reactive({
         
       }
       
+      
+      ### MSE and AIC ###
+      Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+      res_mle <- user_data[,2] - Y_original_pred_mle
+      mse_lan <- (sum(res_mle^(2)) ) / (n_user_data  )
+      
+      AIC_lan <- 2 * length(coef_mle) + negLogLikelihood(coef_mle, data_x =  user_data[,1]  , data_y =  user_data[,2]  ) 
+      ###
+      
       # 2-3 get estimates
       Q_est_mle <- coef_mle[1]
       K_est_mle <- exp( coef_mle[2] )
@@ -5307,8 +5420,10 @@ data_down_reactive <- reactive({
       
       
       table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
-                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
-      
+                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T),
+                                 AIC = c(format(AIC_lan, scientific = T), rep("",3) ),
+                                 MSE = c(format(mse_lan, scientific = T), rep("",3 ) )
+      )
     } # end of zeors == "No"
     
   } ## end of Langmuir
@@ -5361,6 +5476,14 @@ data_down_reactive <- reactive({
         
       }
       
+      ### MSE and AIC ###
+      Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+      res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+      mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+      
+      AIC_fre <- 2 * length(coef_mle_fre) + negLogLikelihood_fre_trans(coef_mle_fre, data_x = user_data[,1] , data_y = user_data[,2])
+      ###
+      
       # 2-3 get estimates
       K_F_prime_est_mle_fre <- coef_mle_fre[1]
       K_F_est_mle_fre <- exp(coef_mle_fre[1])
@@ -5461,7 +5584,11 @@ data_down_reactive <- reactive({
                                  MLE = format(MLE, scientific = T),
                                  se = format( SE, scientific = T),
                                  Upper=format(upper, scientific = T),
-                                 Lower=format(lower, scientific = T))
+                                 Lower=format(lower, scientific = T),
+                                 AIC = c(format(AIC_fre, scientific = T), rep("",3) ),
+                                 MSE = c(format(mse_fre, scientific = T), rep("",3 ) )
+                                 
+      )
     } else {
       
       ### Freundlich model
@@ -5510,6 +5637,14 @@ data_down_reactive <- reactive({
         
       }
       
+      ### MSE and AIC ###
+      Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+      res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+      mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+      
+      AIC_fre <- 2 * length(coef_mle_fre) + negLogLikelihood_fre_trans(coef_mle_fre, data_x = user_data[,1] , data_y = user_data[,2])
+      ###
+      
       # 2-3 get estimates
       K_F_prime_est_mle_fre <- coef_mle_fre[1]
       K_F_est_mle_fre <- exp(coef_mle_fre[1])
@@ -5609,7 +5744,11 @@ data_down_reactive <- reactive({
                                  MLE = format(MLE, scientific = T),
                                  se = format( SE, scientific = T),
                                  Upper=format(upper, scientific = T),
-                                 Lower=format(lower, scientific = T))
+                                 Lower=format(lower, scientific = T),
+                                 AIC = c(format(AIC_fre, scientific = T), rep("",3) ),
+                                 MSE = c(format(mse_fre, scientific = T), rep("",3 ) )
+                                 
+      )
       
       
     } #end of zeros == "No"
