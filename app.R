@@ -17,7 +17,7 @@ library(DT)
 library(latex2exp)
 library(shinydashboard)
 library(markdown)
-
+library(shinyWidgets)
 
 ## For model fitting
 library(readxl)
@@ -35,6 +35,7 @@ n_datasets <- ncol(isotherm.data) / 2
 
 x_matrix <- matrix(0, n_datasets, 101)
 n_vec <- vector("numeric", length=n_datasets)
+
 
 
 ##### Functions required
@@ -368,6 +369,19 @@ body <- dashboardBody(
 
 
 
+
+
+
+######################################################################################
+
+
+
+
+
+
+#####################################################################################
+
+
 ui <- tagList(
   tags$style("@import url(https://use.fontawesome.com/releases/v5.6.0/css/all.css);"),
   
@@ -586,6 +600,8 @@ ui <- tagList(
                  dataTableOutput("table")
         ), ## end of tab 3  
   
+       
+       
        tabPanel("Method",
                 
               dashboardPage(
@@ -602,6 +618,197 @@ ui <- tagList(
       #        tags$style(type = "text/css", ".container-fluid .navbar-header
 #.navbar-brand {margin-left: 0px;}")
        ), ## end of tab 4  
+
+navbarMenu("Do-It-Yourself Tool",
+      tabPanel("Your Data",
+           style='padding-left:00px; padding-right:50px; padding-top:00px; padding-bottom:5px',
+         sidebarLayout(
+           sidebarPanel(
+
+             fileInput("file1", "Upload your CSV file",
+                       multiple = TRUE,
+                       accept = c(
+                                  ".csv"
+                       )),
+
+             
+             # Input: Checkbox if file has header ----
+             prettyRadioButtons(
+               inputId = "header",
+               label = "Header",
+               thick = TRUE,
+               choices = c(Yes = "Yes",
+                           No = "No"
+                           ),
+               selected = "Yes",
+               outline = T,
+               shape = "round",
+               animation = "pulse",
+               fill = F,
+               status = "primary"
+             ),
+             
+             # Input: Select separator ----
+             prettyRadioButtons(
+               inputId = "sep",
+               label = "Separator",
+               thick = TRUE,
+               choices = c(Comma = ",",
+                           Semicolon = ";",
+                           Tab = "\t"),
+               selected = ",",
+               outline = T,
+               shape = "round",
+               animation = "pulse",
+               fill = F,
+               status = "primary"
+               # choiceNames = list(
+               #   icon("calendar"),
+               #   HTML("<p style='color:red;'>Red Text</p>"),
+               #   "Normal text"
+               # ),
+             ),
+             
+             # Input: Checkbox if file has the pair of zeors at first ----
+             prettyRadioButtons(
+               inputId = "zeros",
+               label = "A pair of two zeros in the first row",
+               thick = TRUE,
+               choices = c(Yes = "Yes",
+                           No= "No"
+               ),
+               selected = "Yes",
+               outline = T,
+               shape = "round",
+               animation = "pulse",
+               fill = F,
+               status = "primary"
+             ),
+             
+             # Input: Select quotes ----
+             prettyRadioButtons(
+               inputId = "quote",
+               label = "Quote",
+               thick = TRUE,
+               choices = c(None = "",
+                           "Double Quote" = '"',
+                           "Single Quote" = "'"),
+               selected = "",
+               outline = T,
+               shape = "round",
+               animation = "pulse",
+               fill = F,
+               status = "primary"
+             )
+             ,
+             # ,
+             # 
+             # # Input: Select number of rows to display ----
+             # prettyRadioButtons(
+             #   inputId = "disp",
+             #   label = "Display",
+             #   thick = TRUE,
+             #   choices = c("First 6 rows" = "head",
+             #               All = "all"),
+             #   selected = "head",
+             #   outline = T,
+             #   shape = "round",
+             #   animation = "pulse",
+             #   fill = F,
+             #   status = "primary"
+             # )
+             fluidRow(
+               column(
+                 downloadButton("downloadData_ex", "Download an example file"),
+                 width=12,align= "center")
+             )
+             
+             
+           ) # end of sidebaPanel
+           ,
+           # Main panel for displaying outputs ----
+           mainPanel(
+             hr(),
+             # Output: Data file ----
+             dataTableOutput("user_data")
+             
+           )
+           
+         ) # end of sidbarLayout
+         
+
+      ) ## end of Your Data
+      ,
+      
+      tabPanel(
+        "Your Model",
+        sidebarLayout(
+          sidebarPanel(
+            
+            selectizeInput('user_model', 'Choose your isothem model', c("Langmuir", "Freundlich")
+            ),
+            
+            selectizeInput('user_Rfunction', 'Choose your R optimization function', c("nlm", "optim")
+            ),
+            
+            conditionalPanel(
+              condition = "input.user_Rfunction=='optim'",
+              selectizeInput('user_method', 'Method of minimization', c( "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN"  ))
+            ),
+            
+            selectizeInput("user_conf_level", "Confidence level for MLE band", c("99%", "95%", "90%", "80%")),
+            
+          ) # end of sidebarPanel
+          ,
+          mainPanel(
+            h3(strong("Your Model")),
+            h4("1. Plot"),
+            plotOutput("user_trajectoryPlot"),
+            hr(),
+            h4("2. Estimates"),
+            tableOutput("mle_table_user"),
+          )  # end of mainpanel
+        ) # end of sidebar layout
+        
+        
+      ) ## end of Your Model
+      ,
+      tabPanel(
+        "Download results",
+        sidebarLayout(
+          
+          # Sidebar panel for inputs ----
+          sidebarPanel(
+            fluidRow(
+            # Input: Choose dataset ----
+            column(
+            selectInput("down_dataset", "Choose the output file you want:",
+                        choices = c("Summary", "Trajactory")),
+            align = "center", width = 12
+            ),
+            # Button
+            column(
+              downloadButton("downloadData", "Download"),
+              align = "center", width = 12
+            )
+            )
+          ) # end of sidePanel
+          ,
+          
+          # Main panel for displaying outputs ----
+          mainPanel(
+            br(),
+            tableOutput("user_down")
+            
+          ) # end of mainPanel
+          
+        ) ## end of sidbarLayout
+        
+      ) ## end of Download
+      
+), ### end of navarMenu
+
+
 
       navbarMenu("More",
                tabPanel("Resources",
@@ -689,6 +896,8 @@ server <- function(input, output) {
         } else if(input$main =="Paraquat"){
             k_val <- input$k2
         }
+
+
         value <- c(k_val, input$main, 
                    input$conf_level, input$Rfunction, input$method,
                    input$model)
@@ -3169,6 +3378,2268 @@ server <- function(input, output) {
 
         datatable(data_kth)
     })
+    
+    output$user_data <- renderDataTable({
+      
+      # input$file1 will be NULL initially. After the user selects
+      # and uploads a file, head of that data file by default,
+      # or all rows if selected, will be shown.
+      
+      file <- input$file1
+      ext <- tools::file_ext(file$datapath)
+      validate(need(ext == "csv", "Please upload a csv file"))
+      
+      req(input$file1)
+      
+      df <- read.csv(input$file1$datapath,
+                     # header = input$header,
+                     # sep = input$sep,
+                     # quote = input$quote)
+                     header = input$header == "Yes",
+                     sep = input$sep,
+                     quote = input$quote)
+
+        datatable(df)
+
+      
+    })
+    
+    
+    output$user_trajectoryPlot <- renderPlot({
+      value <- inputVar()
+      
+      file <- input$file1
+      ext <- tools::file_ext(file$datapath)
+      validate(need(ext == "csv", "Please upload a csv file"))
+      
+      req(input$file1)
+      
+      user_data <- read.csv(input$file1$datapath,
+                     # header = input$header,
+                     # sep = input$sep,
+                     # quote = input$quote)
+                     header = input$header == "Yes",
+                     sep = input$sep,
+                     quote = input$quote)
+      
+      colnames(user_data) <- c("Cw.mol.l", "q.mol.kg")
+      n_user_data <- dim(user_data)[1]
+      
+      
+      if(input$user_model == "Langmuir"){
+      
+      if( input$zeros == "Yes" ){
+        #### Langmuir
+        ### 1. initial values
+        Y_trans <-  (1 / user_data[-1,2] )
+        X_trans <- (1 / user_data[-1,1] )
+        
+        data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                 Cw.mol.l = X_trans)
+        
+        fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+        coef_lm <- fit_lm$coefficients
+        Q_est_lm <- 1 / coef_lm[1]
+        K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+        
+        x_vals <- (0:100)/100*max( user_data[,1] )
+
+        # Compute mse
+        fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+        res_lm <- user_data[-1,2] - 1/fitted_values_lm
+        mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+        
+        
+        ### 2. MLE
+        # 2-1 initial values from the previous linear model
+        sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+        initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                                sqrt(sigma2_initial))
+        
+        
+        # 2-2 fit a new model of reparameterization for Kd
+        if(input$user_Rfunction == "optim"){
+          fit_mle <- optim(fn = negLogLikelihood,
+                           par = initial_value_mle,
+                           hessian = T,
+                           method = input$user_method,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+          )
+          coef_mle <- fit_mle$par
+          
+        } else if( input$user_Rfunction == "nlm"){
+          fit_mle <- nlm(f = negLogLikelihood,
+                         p = initial_value_mle,
+                         hessian = T,
+                         data_x = user_data[,1] , data_y = user_data[,2]
+          )
+          
+          coef_mle <- fit_mle$estimate
+          
+        }
+        
+        # 2-3 get estimates
+        Q_est_mle <- coef_mle[1]
+        K_est_mle <- exp( coef_mle[2] )
+        sigma_est_mle <- coef_mle[3]
+        
+        # 2-4 prepare for plotting
+        
+        Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+        res_mle <- user_data[,2] - Y_original_pred_mle
+        mse_3 <- (sum(res_mle^(2)) ) / (n_user_data  )
+        # compute mse
+        
+        
+        fitted_values_mle <-  ( coef_mle[1] * exp(coef_mle[2]) *  x_vals) / (1 + exp(coef_mle[2]) * x_vals)
+        # fitted values based on mle for plotting 
+        
+        
+        # 2-5 MLE Confidence band 
+        if( input$user_conf_level == "95%"){
+          conf_val <- qnorm(0.975)
+        } else if( input$user_conf_level == "90%"){
+          conf_val <- qnorm(0.95)
+        }  else if (input$user_conf_level == "80%"){
+          conf_val<- qnorm(0.90)
+        } else if(input$user_conf_level == "99%"){
+          conf_val<- qnorm(0.995)
+        }
+        
+        Cov_est <- solve(fit_mle$hessian)
+        c_pred_vec <- x_vals
+        
+        mle_band_upper <- rep(NA, length(c_pred_vec))
+        mle_band_lower <- rep(NA, length(c_pred_vec))
+        
+        for(i in 1:length(c_pred_vec)){
+          c_now <- c_pred_vec[i]
+          se_est <- se_for_CI_mle(Q = Q_est_mle, K_new=coef_mle[2], C=c_now,
+                                  sigma = sigma_est_mle, cov_mat=Cov_est)
+          
+          term <- conf_val * se_est
+          mle_band_upper[i] <- fitted_values_mle[i] + term
+          mle_band_lower[i] <- fitted_values_mle[i] - term
+        }
+        
+        
+        ### 3. Plot
+        
+        max_final <- max(c(user_data[,2], mle_band_upper ))
+        
+        # main plot
+        plot(x_vals, fitted_values_mle, type='l', xlab = 'Cw (mol/l)', ylab = 'q (mol/kg)',
+             ylim = c(0, max_final ), lwd = 2, col= 'blue',
+             main=paste( "Your Langmuir model") )
+
+        # Confidence band
+        lines(c_pred_vec, mle_band_upper, col="blue", lty=3, lwd=2)
+        lines(c_pred_vec, mle_band_lower, col="blue", lty=3, lwd=2)
+        
+        # observed data points
+        points(user_data)
+        
+        # legend
+        legend("bottomright",legend=c(
+          paste("MLE of Langmuir: Qm=",
+                signif(Q_est_mle,6),
+                ", Kd=",round(K_est_mle),
+                ", MSE=",format(mse_3, scientific = T),sep=""),
+          paste( input$user_conf_level, " Confidence band of MLE"),
+          paste("Observed data point")
+        ),
+        bty='n',
+        col=c("blue","blue", "black"),lwd=c(2, 2, NA),lty=c(1,2,NA),
+        density = c(0, 0, NA), fill = c("blue", "blue", "white"),
+        border=c(NA, NA, NA),
+        pch = c(NA, NA, 1),
+        cex=1
+        )
+      } else {
+        
+        ### 1. initial values
+        Y_trans <-  (1 / user_data[,2] )
+        X_trans <- (1 / user_data[,1] )
+        
+        data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                 Cw.mol.l = X_trans)
+        
+        fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+        coef_lm <- fit_lm$coefficients
+        Q_est_lm <- 1 / coef_lm[1]
+        K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+        
+        x_vals <- (0:100)/100*max( user_data[,1] )
+        
+        # Compute mse
+        fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[ ,1]
+        res_lm <- user_data[ ,2] - 1/fitted_values_lm
+        mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+        
+        
+        ### 2. MLE
+        # 2-1 initial values from the previous linear model
+        sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+        initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                                sqrt(sigma2_initial))
+        
+        
+        # 2-2 fit a new model of reparameterization for Kd
+        if( input$user_Rfunction == "optim"){
+          fit_mle <- optim(fn = negLogLikelihood,
+                           par = initial_value_mle,
+                           hessian = T,
+                           method = input$user_method,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+          )
+          coef_mle <- fit_mle$par
+          
+        } else if( input$user_Rfunction == "nlm"){
+          fit_mle <- nlm(f = negLogLikelihood,
+                         p = initial_value_mle,
+                         hessian = T,
+                         data_x = user_data[,1] , data_y = user_data[,2]
+          )
+          
+          coef_mle <- fit_mle$estimate
+          
+        }
+        
+        # 2-3 get estimates
+        Q_est_mle <- coef_mle[1]
+        K_est_mle <- exp( coef_mle[2] )
+        sigma_est_mle <- coef_mle[3]
+        
+        # 2-4 prepare for plotting
+        
+        Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+        res_mle <- user_data[,2] - Y_original_pred_mle
+        mse_3 <- (sum(res_mle^(2)) ) / (n_user_data  )
+        # compute mse
+        
+        
+        fitted_values_mle <-  ( coef_mle[1] * exp(coef_mle[2]) *  x_vals) / (1 + exp(coef_mle[2]) * x_vals)
+        # fitted values based on mle for plotting 
+        
+        
+        # 2-5 MLE Confidence band 
+        if( input$user_conf_level == "95%"){
+          conf_val <- qnorm(0.975)
+        } else if( input$user_conf_level == "90%"){
+          conf_val <- qnorm(0.95)
+        }  else if (input$user_conf_level == "80%"){
+          conf_val<- qnorm(0.90)
+        } else if(input$user_conf_level == "99%"){
+          conf_val<- qnorm(0.995)
+        }
+        
+        Cov_est <- solve(fit_mle$hessian)
+        c_pred_vec <- x_vals
+        
+        mle_band_upper <- rep(NA, length(c_pred_vec))
+        mle_band_lower <- rep(NA, length(c_pred_vec))
+        
+        for(i in 1:length(c_pred_vec)){
+          c_now <- c_pred_vec[i]
+          se_est <- se_for_CI_mle(Q = Q_est_mle, K_new=coef_mle[2], C=c_now,
+                                  sigma = sigma_est_mle, cov_mat=Cov_est)
+          
+          term <- conf_val * se_est
+          mle_band_upper[i] <- fitted_values_mle[i] + term
+          mle_band_lower[i] <- fitted_values_mle[i] - term
+        }
+        
+        
+        ### 3. Plot
+        
+        max_final <- max(c(user_data[,2], mle_band_upper ))
+        
+        # main plot
+        plot(x_vals, fitted_values_mle, type='l', xlab = 'Cw (mol/l)', ylab = 'q (mol/kg)',
+             ylim = c(0, max_final ), lwd = 2, col= 'blue',
+             main=paste( "Your Langmuir model") )
+        
+        # Confidence band
+        lines(c_pred_vec, mle_band_upper, col="blue", lty=3, lwd=2)
+        lines(c_pred_vec, mle_band_lower, col="blue", lty=3, lwd=2)
+        
+        # observed data points
+        points(user_data)
+        
+        # legend
+        legend("bottomright",legend=c(
+          paste("MLE of Langmuir: Qm=",
+                signif(Q_est_mle,6),
+                ", Kd=",round(K_est_mle),
+                ", MSE=",format(mse_3, scientific = T),sep=""),
+          paste( input$user_conf_level, " Confidence band of MLE"),
+          paste("Observed data point")
+        ),
+        bty='n',
+        col=c("blue","blue", "black"),lwd=c(2, 2, NA),lty=c(1,2,NA),
+        density = c(0, 0, NA), fill = c("blue", "blue", "white"),
+        border=c(NA, NA, NA),
+        pch = c(NA, NA, 1),
+        cex=1
+        )
+      } # end of zeors == "No"
+     
+      } ## end of Langmuir
+      else if( input$user_model == "Freundlich" ) {
+        if( input$zeros == "Yes"){
+          
+          ### Freundlich model
+          ## 1. initial values
+          Y_trans <-  log(user_data[-1,2] )
+          X_trans <- log(user_data[-1,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+          
+          K_F_est_lm <- exp( coef_lm[1] )
+          n_est_lm <- ( 1 / coef_lm[2] ) 
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          
+          res_lm <- user_data[-1,2] - exp(fitted_values_lm)
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          
+       
+          ## 2. MLE
+          initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+          
+          
+          # 2-1 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                                 par = initial_value_mle,
+                                 hessian = T,
+                                 method = input$user_method,
+                                 data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle_fre <- fit_mle_fre$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                               p = initial_value_mle,
+                               hessian = T,
+                               data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle_fre <- fit_mle_fre$estimate
+            
+          }
+          
+          # 2-3 get estimates
+          K_F_prime_est_mle_fre <- coef_mle_fre[1]
+          K_F_est_mle_fre <- exp(coef_mle_fre[1])
+          
+          n_est_mle_fre <- coef_mle_fre[2]
+          sigma_est_mle_fre <- coef_mle_fre[3]
+          
+          # 2-4 prepare for plotting
+          Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          # compute mse
+          
+          
+          fitted_values_mle_fre <-   exp(coef_mle_fre[1]) *   x_vals^(1/coef_mle_fre[2])
+          # fitted values based on mle for plotting
+          
+          
+          # 2-5 MLE Confidence band
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if(input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          Cov_est_fre <- solve(fit_mle_fre$hessian)
+          c_pred_vec <- x_vals
+          
+          mle_band_upper_fre <- rep(NA, length(c_pred_vec))
+          mle_band_lower_fre <- rep(NA, length(c_pred_vec))
+          
+          for(i in 2:length(c_pred_vec)){
+            c_now <- c_pred_vec[i]
+            se_est <- se_for_CI_mle_fre_trans( K_F_prime = coef_mle_fre[1], n=coef_mle_fre[2], C=c_now, sigma = sigma_est_mle_fre, cov_mat=Cov_est_fre)
+            
+            term <- conf_val * se_est
+            mle_band_upper_fre[i] <- fitted_values_mle_fre[i] + term
+            mle_band_lower_fre[i] <- fitted_values_mle_fre[i] - term
+          }
+          
+          mle_band_upper_fre[1] <- 0
+          mle_band_lower_fre[1] <- 0
+          # since derivative[2] does not exist when C= 0
+          
+          ### 4. Plot
+          
+          max_final <- max(c(user_data[,2], mle_band_upper_fre ))
+          
+          # main plot
+          plot(x_vals, fitted_values_mle_fre, type='l', xlab = 'Cw (mol/l)', ylab = 'q (mol/kg)',
+               ylim = c(0, max_final ), lwd = 2, col= 'blue',
+               main=paste( "Your Freundlich model" ))
+          
+          
+          # Confidence band
+          lines(c_pred_vec, mle_band_upper_fre, col="blue", lty=3, lwd=2)
+          lines(c_pred_vec, mle_band_lower_fre, col="blue", lty=3, lwd=2)
+
+          # observed data points
+          points( user_data )
+          
+          
+          legend("bottomright",legend=c(
+            paste("Freundlich : K_F=",
+                  signif(K_F_est_mle_fre),
+                  ", n=",signif(n_est_mle_fre),
+                  ", MSE=", format(mse_fre,scientific = T ),sep=""),
+            paste( input$user_conf_level, " Confidence band of Freundlich MLE"),
+            paste("Observed data point")
+          ),
+          bty='n',
+          col=c("blue","blue", "black"),lwd=c(2, 2, NA),lty=c(1,3,NA),
+          density = c(0, 0, NA), fill = c("blue", "blue", "white"),
+          border=c(NA, NA, NA),
+          pch = c(NA, NA, 1),
+          cex=1
+          )
+        } else {
+          
+          ### Freundlich model
+          ## 1. initial values
+          Y_trans <-  log(user_data[,2] )
+          X_trans <- log(user_data[,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[,1]
+          
+          K_F_est_lm <- exp( coef_lm[1] )
+          n_est_lm <- ( 1 / coef_lm[2] ) 
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          
+          res_lm <- user_data[,2] - exp(fitted_values_lm)
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          
+          
+          ## 2. MLE
+          initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+          
+          
+          # 2-1 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                                 par = initial_value_mle,
+                                 hessian = T,
+                                 method = input$user_method,
+                                 data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle_fre <- fit_mle_fre$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                               p = initial_value_mle,
+                               hessian = T,
+                               data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle_fre <- fit_mle_fre$estimate
+            
+          }
+          
+          # 2-3 get estimates
+          K_F_prime_est_mle_fre <- coef_mle_fre[1]
+          K_F_est_mle_fre <- exp(coef_mle_fre[1])
+          
+          n_est_mle_fre <- coef_mle_fre[2]
+          sigma_est_mle_fre <- coef_mle_fre[3]
+          
+          # 2-4 prepare for plotting
+          Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          # compute mse
+          
+          
+          fitted_values_mle_fre <-   exp(coef_mle_fre[1]) *   x_vals^(1/coef_mle_fre[2])
+          # fitted values based on mle for plotting
+          
+          
+          # 2-5 MLE Confidence band
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if(input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          Cov_est_fre <- solve(fit_mle_fre$hessian)
+          c_pred_vec <- x_vals
+          
+          mle_band_upper_fre <- rep(NA, length(c_pred_vec))
+          mle_band_lower_fre <- rep(NA, length(c_pred_vec))
+          
+          for(i in 2:length(c_pred_vec)){
+            c_now <- c_pred_vec[i]
+            se_est <- se_for_CI_mle_fre_trans( K_F_prime = coef_mle_fre[1], n=coef_mle_fre[2], C=c_now, sigma = sigma_est_mle_fre, cov_mat=Cov_est_fre)
+            
+            term <- conf_val * se_est
+            mle_band_upper_fre[i] <- fitted_values_mle_fre[i] + term
+            mle_band_lower_fre[i] <- fitted_values_mle_fre[i] - term
+          }
+          
+          mle_band_upper_fre[1] <- 0
+          mle_band_lower_fre[1] <- 0
+          # since derivative[2] does not exist when C= 0
+          
+          ### 4. Plot
+          
+          max_final <- max(c(user_data[,2], mle_band_upper_fre ))
+          
+          # main plot
+          plot(x_vals, fitted_values_mle_fre, type='l', xlab = 'Cw (mol/l)', ylab = 'q (mol/kg)',
+               ylim = c(0, max_final ), lwd = 2, col= 'blue',
+               main=paste( "Your Freundlich model" ))
+          
+          
+          # Confidence band
+          lines(c_pred_vec, mle_band_upper_fre, col="blue", lty=3, lwd=2)
+          lines(c_pred_vec, mle_band_lower_fre, col="blue", lty=3, lwd=2)
+          
+          # observed data points
+          points( user_data )
+          
+          
+          legend("bottomright",legend=c(
+            paste("Freundlich : K_F=",
+                  signif(K_F_est_mle_fre),
+                  ", n=",signif(n_est_mle_fre),
+                  ", MSE=", format(mse_fre,scientific = T ),sep=""),
+            paste( input$user_conf_level, " Confidence band of Freundlich MLE"),
+            paste("Observed data point")
+          ),
+          bty='n',
+          col=c("blue","blue", "black"),lwd=c(2, 2, NA),lty=c(1,3,NA),
+          density = c(0, 0, NA), fill = c("blue", "blue", "white"),
+          border=c(NA, NA, NA),
+          pch = c(NA, NA, 1),
+          cex=1
+          )
+        } #end of zeros == "No"
+      } ## end of Freundlich
+    })
+    
+    
+    
+    
+    
+    output$mle_table_user <- renderTable({
+      value <- inputVar()
+      
+      file <- input$file1
+      ext <- tools::file_ext(file$datapath)
+      validate(need(ext == "csv", "Please upload a csv file"))
+      
+      req(input$file1)
+      
+      user_data <- read.csv(input$file1$datapath,
+                            # header = input$header,
+                            # sep = input$sep,
+                            # quote = input$quote)
+                            header = input$header == "Yes",
+                            sep = input$sep,
+                            quote = input$quote)
+      
+      colnames(user_data) <- c("Cw.mol.l", "q.mol.kg")
+      n_user_data <- dim(user_data)[1]
+      
+      
+      if(input$user_model == "Langmuir"){
+        
+        if( input$zeros == "Yes" ){
+          #### Langmuir
+          ### 1. initial values
+          Y_trans <-  (1 / user_data[-1,2] )
+          X_trans <- (1 / user_data[-1,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          Q_est_lm <- 1 / coef_lm[1]
+          K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+          
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          # Compute mse
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+          res_lm <- user_data[-1,2] - 1/fitted_values_lm
+          mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+          
+          
+          ### 2. MLE
+          # 2-1 initial values from the previous linear model
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                                  sqrt(sigma2_initial))
+          
+          
+          # 2-2 fit a new model of reparameterization for Kd
+          if(input$user_Rfunction == "optim"){
+            fit_mle <- optim(fn = negLogLikelihood,
+                             par = initial_value_mle,
+                             hessian = T,
+                             method = input$user_method,
+                             data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle <- fit_mle$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle <- nlm(f = negLogLikelihood,
+                           p = initial_value_mle,
+                           hessian = T,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle <- fit_mle$estimate
+            
+          }
+          
+          Q_est_mle <- coef_mle[1]
+          K_est_mle <- exp( coef_mle[2] )
+          sigma_est_mle <- coef_mle[3]
+          
+          
+          Cov_est <- solve(fit_mle$hessian)
+          std_error1 <- sqrt(Cov_est[1,1]  )
+          std_error2 <- sqrt(Cov_est[2,2]  )
+          std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle[2]))^(2) )
+          std_error3 <- sqrt(Cov_est[3,3]  )
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle[1], coef_mle[2], exp(coef_mle[2]), coef_mle[3])
+          SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3)
+          upper <- c(coef_mle[1] + conf_val * std_error1,
+                     coef_mle[2] + conf_val * std_error2, 
+                     exp(coef_mle[2] + conf_val * std_error2),
+                     # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
+                     coef_mle[3] + conf_val * std_error3 )
+          lower <- c(coef_mle[1] - conf_val * std_error1,
+                     coef_mle[2] - conf_val * std_error2, 
+                     exp(coef_mle[2] - conf_val * std_error2),
+                     # exp(coef_mle[2]) - conf_val * std_error2_delta_method, 
+                     coef_mle[3] - conf_val * std_error3 )
+          
+          
+          
+          table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+          
+          
+        } else {
+          
+          ### 1. initial values
+          Y_trans <-  (1 / user_data[,2] )
+          X_trans <- (1 / user_data[,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          Q_est_lm <- 1 / coef_lm[1]
+          K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+          
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          # Compute mse
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[ ,1]
+          res_lm <- user_data[ ,2] - 1/fitted_values_lm
+          mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+          
+          
+          ### 2. MLE
+          # 2-1 initial values from the previous linear model
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                                  sqrt(sigma2_initial))
+          
+          
+          # 2-2 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle <- optim(fn = negLogLikelihood,
+                             par = initial_value_mle,
+                             hessian = T,
+                             method = input$user_method,
+                             data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle <- fit_mle$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle <- nlm(f = negLogLikelihood,
+                           p = initial_value_mle,
+                           hessian = T,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle <- fit_mle$estimate
+            
+          }
+          
+          
+          Q_est_mle <- coef_mle[1]
+          K_est_mle <- exp( coef_mle[2] )
+          sigma_est_mle <- coef_mle[3]
+          
+          
+          Cov_est <- solve(fit_mle$hessian)
+          std_error1 <- sqrt(Cov_est[1,1]  )
+          std_error2 <- sqrt(Cov_est[2,2]  )
+          std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle[2]))^(2) )
+          std_error3 <- sqrt(Cov_est[3,3]  )
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle[1], coef_mle[2], exp(coef_mle[2]), coef_mle[3])
+          SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3)
+          upper <- c(coef_mle[1] + conf_val * std_error1,
+                     coef_mle[2] + conf_val * std_error2, 
+                     exp(coef_mle[2] + conf_val * std_error2),
+                     # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
+                     coef_mle[3] + conf_val * std_error3 )
+          lower <- c(coef_mle[1] - conf_val * std_error1,
+                     coef_mle[2] - conf_val * std_error2, 
+                     exp(coef_mle[2] - conf_val * std_error2),
+                     # exp(coef_mle[2]) - conf_val * std_error2_delta_method, 
+                     coef_mle[3] - conf_val * std_error3 )
+          
+          
+          
+          table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+          
+          
+        } # end of zeors == "No"
+        
+      } ## end of Langmuir
+      else if( input$user_model == "Freundlich" ) {
+        if( input$zeros == "Yes"){
+          
+          ### Freundlich model
+          ## 1. initial values
+          Y_trans <-  log(user_data[-1,2] )
+          X_trans <- log(user_data[-1,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+          
+          K_F_est_lm <- exp( coef_lm[1] )
+          n_est_lm <- ( 1 / coef_lm[2] ) 
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          
+          res_lm <- user_data[-1,2] - exp(fitted_values_lm)
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          
+          
+          ## 2. MLE
+          initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+          
+          
+          # 2-1 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                                 par = initial_value_mle,
+                                 hessian = T,
+                                 method = input$user_method,
+                                 data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle <- fit_mle_fre$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                               p = initial_value_mle,
+                               hessian = T,
+                               data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle <- fit_mle_fre$estimate
+            
+          }
+          
+
+          K_F_prime_est_mle_fre <- coef_mle[1]
+          K_F_est_mle_fre <- exp(coef_mle[1])
+          
+          n_est_mle_fre <- coef_mle[2]
+          sigma_est_mle <- coef_mle[3]
+          
+          
+          Cov_est <- solve(fit_mle_fre$hessian)
+          std_error1 <- sqrt(Cov_est[1,1])
+          std_error1_delta_method <- sqrt(Cov_est[1,1] * (exp(coef_mle[1]))^(2))
+          std_error2 <- sqrt(Cov_est[2,2])
+          std_error3 <- sqrt(Cov_est[3,3])
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle[1], exp(coef_mle[1]), coef_mle[2], coef_mle[3])
+          SE <- c(std_error1, std_error1_delta_method,std_error2, std_error3)
+          upper <- c(coef_mle[1] + conf_val * std_error1, 
+                     # exp(coef_mle[1]) + conf_val * std_error1_delta_method,
+                     exp(coef_mle[1] + conf_val * std_error1),
+                     coef_mle[2] + conf_val * std_error2, 
+                     coef_mle[3] + conf_val * std_error3 )
+          lower <- c(coef_mle[1] - conf_val * std_error1, 
+                     # exp(coef_mle[1]) - conf_val * std_error1_delta_method,
+                     exp(coef_mle[1] - conf_val * std_error1),
+                     coef_mle[2] - conf_val * std_error2, 
+                     coef_mle[3] - conf_val * std_error3 )
+          
+          
+          table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
+                                     MLE = format(MLE, scientific = T),
+                                     se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T),
+                                     Lower=format(lower, scientific = T))
+        } else {
+          
+          ### Freundlich model
+          ## 1. initial values
+          Y_trans <-  log(user_data[,2] )
+          X_trans <- log(user_data[,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[,1]
+          
+          K_F_est_lm <- exp( coef_lm[1] )
+          n_est_lm <- ( 1 / coef_lm[2] ) 
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          
+          res_lm <- user_data[,2] - exp(fitted_values_lm)
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          
+          
+          ## 2. MLE
+          initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+          
+          
+          # 2-1 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                                 par = initial_value_mle,
+                                 hessian = T,
+                                 method = input$user_method,
+                                 data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle <- fit_mle_fre$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                               p = initial_value_mle,
+                               hessian = T,
+                               data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle <- fit_mle_fre$estimate
+            
+          }
+          
+          
+          
+          K_F_prime_est_mle_fre <- coef_mle[1]
+          K_F_est_mle_fre <- exp(coef_mle[1])
+          
+          n_est_mle_fre <- coef_mle[2]
+          sigma_est_mle <- coef_mle[3]
+          
+          
+          Cov_est <- solve(fit_mle_fre$hessian)
+          std_error1 <- sqrt(Cov_est[1,1])
+          std_error1_delta_method <- sqrt(Cov_est[1,1] * (exp(coef_mle[1]))^(2))
+          std_error2 <- sqrt(Cov_est[2,2])
+          std_error3 <- sqrt(Cov_est[3,3])
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle[1], exp(coef_mle[1]), coef_mle[2], coef_mle[3])
+          SE <- c(std_error1, std_error1_delta_method,std_error2, std_error3)
+          upper <- c(coef_mle[1] + conf_val * std_error1, 
+                     # exp(coef_mle[1]) + conf_val * std_error1_delta_method,
+                     exp(coef_mle[1] + conf_val * std_error1),
+                     coef_mle[2] + conf_val * std_error2, 
+                     coef_mle[3] + conf_val * std_error3 )
+          lower <- c(coef_mle[1] - conf_val * std_error1, 
+                     # exp(coef_mle[1]) - conf_val * std_error1_delta_method,
+                     exp(coef_mle[1] - conf_val * std_error1),
+                     coef_mle[2] - conf_val * std_error2, 
+                     coef_mle[3] - conf_val * std_error3 )
+          
+          
+          table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
+                                     MLE = format(MLE, scientific = T),
+                                     se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T),
+                                     Lower=format(lower, scientific = T))
+        } #end of zeros == "No"
+      } ## end of Freundlich
+    },
+    bordered = T
+    )
+    
+    
+
+    
+    # Table of selected dataset ----
+    output$user_down <- renderTable({
+      value <- inputVar()
+      
+      file <- input$file1
+      ext <- tools::file_ext(file$datapath)
+      validate(need(ext == "csv", "Please upload a csv file"))
+      
+      req(input$file1)
+      
+      user_data <- read.csv(input$file1$datapath,
+                            # header = input$header,
+                            # sep = input$sep,
+                            # quote = input$quote)
+                            header = input$header == "Yes",
+                            sep = input$sep,
+                            quote = input$quote)
+      
+      colnames(user_data) <- c("Cw.mol.l", "q.mol.kg")
+      n_user_data <- dim(user_data)[1]
+      
+      
+      if(input$user_model == "Langmuir"){
+        
+        if( input$zeros == "Yes" ){
+          #### Langmuir
+          ### 1. initial values
+          Y_trans <-  (1 / user_data[-1,2] )
+          X_trans <- (1 / user_data[-1,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          Q_est_lm <- 1 / coef_lm[1]
+          K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+          
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          # Compute mse
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+          res_lm <- user_data[-1,2] - 1/fitted_values_lm
+          mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+          
+          
+          ### 2. MLE
+          # 2-1 initial values from the previous linear model
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                                  sqrt(sigma2_initial))
+          
+          
+          # 2-2 fit a new model of reparameterization for Kd
+          if(input$user_Rfunction == "optim"){
+            fit_mle <- optim(fn = negLogLikelihood,
+                             par = initial_value_mle,
+                             hessian = T,
+                             method = input$user_method,
+                             data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle <- fit_mle$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle <- nlm(f = negLogLikelihood,
+                           p = initial_value_mle,
+                           hessian = T,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle <- fit_mle$estimate
+            
+          }
+          
+          # 2-3 get estimates
+          Q_est_mle <- coef_mle[1]
+          K_est_mle <- exp( coef_mle[2] )
+          sigma_est_mle <- coef_mle[3]
+          
+          # 2-4 prepare for plotting
+          
+          Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+          res_mle <- user_data[,2] - Y_original_pred_mle
+          mse_3 <- (sum(res_mle^(2)) ) / (n_user_data  )
+          # compute mse
+          
+          
+          fitted_values_mle <-  ( coef_mle[1] * exp(coef_mle[2]) *  x_vals) / (1 + exp(coef_mle[2]) * x_vals)
+          # fitted values based on mle for plotting 
+          
+          
+          # 2-5 MLE Confidence band 
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if(input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          Cov_est <- solve(fit_mle$hessian)
+          c_pred_vec <- x_vals
+          
+          mle_band_upper <- rep(NA, length(c_pred_vec))
+          mle_band_lower <- rep(NA, length(c_pred_vec))
+          
+          for(i in 1:length(c_pred_vec)){
+            c_now <- c_pred_vec[i]
+            se_est <- se_for_CI_mle(Q = Q_est_mle, K_new=coef_mle[2], C=c_now,
+                                    sigma = sigma_est_mle, cov_mat=Cov_est)
+            
+            term <- conf_val * se_est
+            mle_band_upper[i] <- fitted_values_mle[i] + term
+            mle_band_lower[i] <- fitted_values_mle[i] - term
+          }
+          
+          
+          fitted_values <- fitted_values_mle
+          upper_bound <- mle_band_upper
+          lower_bound <- mle_band_lower
+          
+          
+          trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                          "upper_bound"=upper_bound,
+                                          "lower_bound"=lower_bound)
+          
+          
+          ### MLE Table
+          Q_est_mle <- coef_mle[1]
+          K_est_mle <- exp( coef_mle[2] )
+          sigma_est_mle <- coef_mle[3]
+          
+          
+          Cov_est <- solve(fit_mle$hessian)
+          std_error1 <- sqrt(Cov_est[1,1]  )
+          std_error2 <- sqrt(Cov_est[2,2]  )
+          std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle[2]))^(2) )
+          std_error3 <- sqrt(Cov_est[3,3]  )
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle[1], coef_mle[2], exp(coef_mle[2]), coef_mle[3])
+          SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3)
+          upper <- c(coef_mle[1] + conf_val * std_error1,
+                     coef_mle[2] + conf_val * std_error2, 
+                     exp(coef_mle[2] + conf_val * std_error2),
+                     # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
+                     coef_mle[3] + conf_val * std_error3 )
+          lower <- c(coef_mle[1] - conf_val * std_error1,
+                     coef_mle[2] - conf_val * std_error2, 
+                     exp(coef_mle[2] - conf_val * std_error2),
+                     # exp(coef_mle[2]) - conf_val * std_error2_delta_method, 
+                     coef_mle[3] - conf_val * std_error3 )
+          
+          
+          
+          table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+          
+          
+          
+        } else {
+          
+          ### 1. initial values
+          Y_trans <-  (1 / user_data[,2] )
+          X_trans <- (1 / user_data[,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          Q_est_lm <- 1 / coef_lm[1]
+          K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+          
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          # Compute mse
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[ ,1]
+          res_lm <- user_data[ ,2] - 1/fitted_values_lm
+          mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+          
+          
+          ### 2. MLE
+          # 2-1 initial values from the previous linear model
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                                  sqrt(sigma2_initial))
+          
+          
+          # 2-2 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle <- optim(fn = negLogLikelihood,
+                             par = initial_value_mle,
+                             hessian = T,
+                             method = input$user_method,
+                             data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle <- fit_mle$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle <- nlm(f = negLogLikelihood,
+                           p = initial_value_mle,
+                           hessian = T,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle <- fit_mle$estimate
+            
+          }
+          
+          # 2-3 get estimates
+          Q_est_mle <- coef_mle[1]
+          K_est_mle <- exp( coef_mle[2] )
+          sigma_est_mle <- coef_mle[3]
+          
+          # 2-4 prepare for plotting
+          
+          Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+          res_mle <- user_data[,2] - Y_original_pred_mle
+          mse_3 <- (sum(res_mle^(2)) ) / (n_user_data  )
+          # compute mse
+          
+          
+          fitted_values_mle <-  ( coef_mle[1] * exp(coef_mle[2]) *  x_vals) / (1 + exp(coef_mle[2]) * x_vals)
+          # fitted values based on mle for plotting 
+          
+          
+          # 2-5 MLE Confidence band 
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if(input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          Cov_est <- solve(fit_mle$hessian)
+          c_pred_vec <- x_vals
+          
+          mle_band_upper <- rep(NA, length(c_pred_vec))
+          mle_band_lower <- rep(NA, length(c_pred_vec))
+          
+          for(i in 1:length(c_pred_vec)){
+            c_now <- c_pred_vec[i]
+            se_est <- se_for_CI_mle(Q = Q_est_mle, K_new=coef_mle[2], C=c_now,
+                                    sigma = sigma_est_mle, cov_mat=Cov_est)
+            
+            term <- conf_val * se_est
+            mle_band_upper[i] <- fitted_values_mle[i] + term
+            mle_band_lower[i] <- fitted_values_mle[i] - term
+          }
+          
+          
+          fitted_values <- fitted_values_mle
+          upper_bound <- mle_band_upper
+          lower_bound <- mle_band_lower
+          
+          trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                          "upper_bound"=upper_bound,
+                                          "lower_bound"=lower_bound)
+          
+          
+          ### MLE Table
+          Q_est_mle <- coef_mle[1]
+          K_est_mle <- exp( coef_mle[2] )
+          sigma_est_mle <- coef_mle[3]
+          
+          
+          Cov_est <- solve(fit_mle$hessian)
+          std_error1 <- sqrt(Cov_est[1,1]  )
+          std_error2 <- sqrt(Cov_est[2,2]  )
+          std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle[2]))^(2) )
+          std_error3 <- sqrt(Cov_est[3,3]  )
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle[1], coef_mle[2], exp(coef_mle[2]), coef_mle[3])
+          SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3)
+          upper <- c(coef_mle[1] + conf_val * std_error1,
+                     coef_mle[2] + conf_val * std_error2, 
+                     exp(coef_mle[2] + conf_val * std_error2),
+                     # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
+                     coef_mle[3] + conf_val * std_error3 )
+          lower <- c(coef_mle[1] - conf_val * std_error1,
+                     coef_mle[2] - conf_val * std_error2, 
+                     exp(coef_mle[2] - conf_val * std_error2),
+                     # exp(coef_mle[2]) - conf_val * std_error2_delta_method, 
+                     coef_mle[3] - conf_val * std_error3 )
+          
+          
+          
+          table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+          
+        } # end of zeors == "No"
+        
+      } ## end of Langmuir
+      else if( input$user_model == "Freundlich" ) {
+        if( input$zeros == "Yes"){
+          
+          ### Freundlich model
+          ## 1. initial values
+          Y_trans <-  log(user_data[-1,2] )
+          X_trans <- log(user_data[-1,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+          
+          K_F_est_lm <- exp( coef_lm[1] )
+          n_est_lm <- ( 1 / coef_lm[2] ) 
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          
+          res_lm <- user_data[-1,2] - exp(fitted_values_lm)
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          
+          
+          ## 2. MLE
+          initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+          
+          
+          # 2-1 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                                 par = initial_value_mle,
+                                 hessian = T,
+                                 method = input$user_method,
+                                 data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle_fre <- fit_mle_fre$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                               p = initial_value_mle,
+                               hessian = T,
+                               data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle_fre <- fit_mle_fre$estimate
+            
+          }
+          
+          # 2-3 get estimates
+          K_F_prime_est_mle_fre <- coef_mle_fre[1]
+          K_F_est_mle_fre <- exp(coef_mle_fre[1])
+          
+          n_est_mle_fre <- coef_mle_fre[2]
+          sigma_est_mle_fre <- coef_mle_fre[3]
+          
+          # 2-4 prepare for plotting
+          Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          # compute mse
+          
+          
+          fitted_values_mle_fre <-   exp(coef_mle_fre[1]) *   x_vals^(1/coef_mle_fre[2])
+          # fitted values based on mle for plotting
+          
+          
+          # 2-5 MLE Confidence band
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if(input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          Cov_est_fre <- solve(fit_mle_fre$hessian)
+          c_pred_vec <- x_vals
+          
+          mle_band_upper_fre <- rep(NA, length(c_pred_vec))
+          mle_band_lower_fre <- rep(NA, length(c_pred_vec))
+          
+          for(i in 2:length(c_pred_vec)){
+            c_now <- c_pred_vec[i]
+            se_est <- se_for_CI_mle_fre_trans( K_F_prime = coef_mle_fre[1], n=coef_mle_fre[2], C=c_now, sigma = sigma_est_mle_fre, cov_mat=Cov_est_fre)
+            
+            term <- conf_val * se_est
+            mle_band_upper_fre[i] <- fitted_values_mle_fre[i] + term
+            mle_band_lower_fre[i] <- fitted_values_mle_fre[i] - term
+          }
+          
+          mle_band_upper_fre[1] <- 0
+          mle_band_lower_fre[1] <- 0
+          # since derivative[2] does not exist when C= 0
+          
+          fitted_values <- fitted_values_mle_fre
+          upper_bound <- mle_band_upper_fre
+          lower_bound <- mle_band_lower_fre
+          
+          
+          trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                          "upper_bound"=upper_bound,
+                                          "lower_bound"=lower_bound)
+          
+          #### MLE Table
+          K_F_prime_est_mle_fre <- coef_mle_fre[1]
+          K_F_est_mle_fre <- exp(coef_mle_fre[1])
+          
+          n_est_mle_fre <- coef_mle_fre[2]
+          sigma_est_mle <- coef_mle_fre[3]
+          
+          
+          Cov_est <- solve(fit_mle_fre$hessian)
+          std_error1 <- sqrt(Cov_est[1,1])
+          std_error1_delta_method <- sqrt(Cov_est[1,1] * (exp(coef_mle_fre[1]))^(2))
+          std_error2 <- sqrt(Cov_est[2,2])
+          std_error3 <- sqrt(Cov_est[3,3])
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle_fre[1], exp(coef_mle_fre[1]), coef_mle_fre[2], coef_mle_fre[3])
+          SE <- c(std_error1, std_error1_delta_method,std_error2, std_error3)
+          upper <- c(coef_mle_fre[1] + conf_val * std_error1, 
+                     # exp(coef_mle_fre[1]) + conf_val * std_error1_delta_method,
+                     exp(coef_mle_fre[1] + conf_val * std_error1),
+                     coef_mle_fre[2] + conf_val * std_error2, 
+                     coef_mle_fre[3] + conf_val * std_error3 )
+          lower <- c(coef_mle_fre[1] - conf_val * std_error1, 
+                     # exp(coef_mle_fre[1]) - conf_val * std_error1_delta_method,
+                     exp(coef_mle_fre[1] - conf_val * std_error1),
+                     coef_mle_fre[2] - conf_val * std_error2, 
+                     coef_mle_fre[3] - conf_val * std_error3 )
+          
+          
+          table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
+                                     MLE = format(MLE, scientific = T),
+                                     se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T),
+                                     Lower=format(lower, scientific = T))
+        } else {
+          
+          ### Freundlich model
+          ## 1. initial values
+          Y_trans <-  log(user_data[,2] )
+          X_trans <- log(user_data[,1] )
+          
+          data_trans <- data.frame(q.mol.kg = Y_trans, 
+                                   Cw.mol.l = X_trans)
+          
+          fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+          coef_lm <- fit_lm$coefficients
+          fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[,1]
+          
+          K_F_est_lm <- exp( coef_lm[1] )
+          n_est_lm <- ( 1 / coef_lm[2] ) 
+          x_vals <- (0:100)/100*max( user_data[,1] )
+          
+          
+          res_lm <- user_data[,2] - exp(fitted_values_lm)
+          sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+          
+          
+          ## 2. MLE
+          initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+          
+          
+          # 2-1 fit a new model of reparameterization for Kd
+          if( input$user_Rfunction == "optim"){
+            fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                                 par = initial_value_mle,
+                                 hessian = T,
+                                 method = input$user_method,
+                                 data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            coef_mle_fre <- fit_mle_fre$par
+            
+          } else if( input$user_Rfunction == "nlm"){
+            fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                               p = initial_value_mle,
+                               hessian = T,
+                               data_x = user_data[,1] , data_y = user_data[,2]
+            )
+            
+            coef_mle_fre <- fit_mle_fre$estimate
+            
+          }
+          
+          # 2-3 get estimates
+          K_F_prime_est_mle_fre <- coef_mle_fre[1]
+          K_F_est_mle_fre <- exp(coef_mle_fre[1])
+          
+          n_est_mle_fre <- coef_mle_fre[2]
+          sigma_est_mle_fre <- coef_mle_fre[3]
+          
+          # 2-4 prepare for plotting
+          Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+          res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+          mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+          # compute mse
+          
+          
+          fitted_values_mle_fre <-   exp(coef_mle_fre[1]) *   x_vals^(1/coef_mle_fre[2])
+          # fitted values based on mle for plotting
+          
+          
+          # 2-5 MLE Confidence band
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if(input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          Cov_est_fre <- solve(fit_mle_fre$hessian)
+          c_pred_vec <- x_vals
+          
+          mle_band_upper_fre <- rep(NA, length(c_pred_vec))
+          mle_band_lower_fre <- rep(NA, length(c_pred_vec))
+          
+          for(i in 2:length(c_pred_vec)){
+            c_now <- c_pred_vec[i]
+            se_est <- se_for_CI_mle_fre_trans( K_F_prime = coef_mle_fre[1], n=coef_mle_fre[2], C=c_now, sigma = sigma_est_mle_fre, cov_mat=Cov_est_fre)
+            
+            term <- conf_val * se_est
+            mle_band_upper_fre[i] <- fitted_values_mle_fre[i] + term
+            mle_band_lower_fre[i] <- fitted_values_mle_fre[i] - term
+          }
+          
+          mle_band_upper_fre[1] <- 0
+          mle_band_lower_fre[1] <- 0
+          # since derivative[2] does not exist when C= 0
+          
+          fitted_values <- fitted_values_mle_fre
+          upper_bound <- mle_band_upper_fre
+          lower_bound <- mle_band_lower_fre
+          
+          trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                          "upper_bound"=upper_bound,
+                                          "lower_bound"=lower_bound)
+          
+          #### MLE Table
+          K_F_prime_est_mle_fre <- coef_mle_fre[1]
+          K_F_est_mle_fre <- exp(coef_mle_fre[1])
+          
+          n_est_mle_fre <- coef_mle_fre[2]
+          sigma_est_mle <- coef_mle_fre[3]
+          
+          
+          Cov_est <- solve(fit_mle_fre$hessian)
+          std_error1 <- sqrt(Cov_est[1,1])
+          std_error1_delta_method <- sqrt(Cov_est[1,1] * (exp(coef_mle_fre[1]))^(2))
+          std_error2 <- sqrt(Cov_est[2,2])
+          std_error3 <- sqrt(Cov_est[3,3])
+          
+          if( input$user_conf_level == "95%"){
+            conf_val <- qnorm(0.975)
+          } else if( input$user_conf_level == "90%"){
+            conf_val <- qnorm(0.95)
+          }  else if (input$user_conf_level == "80%"){
+            conf_val<- qnorm(0.90)
+          } else if (input$user_conf_level == "99%"){
+            conf_val<- qnorm(0.995)
+          }
+          
+          MLE <- c(coef_mle_fre[1], exp(coef_mle_fre[1]), coef_mle_fre[2], coef_mle_fre[3])
+          SE <- c(std_error1, std_error1_delta_method,std_error2, std_error3)
+          upper <- c(coef_mle_fre[1] + conf_val * std_error1, 
+                     # exp(coef_mle_fre[1]) + conf_val * std_error1_delta_method,
+                     exp(coef_mle_fre[1] + conf_val * std_error1),
+                     coef_mle_fre[2] + conf_val * std_error2, 
+                     coef_mle_fre[3] + conf_val * std_error3 )
+          lower <- c(coef_mle_fre[1] - conf_val * std_error1, 
+                     # exp(coef_mle_fre[1]) - conf_val * std_error1_delta_method,
+                     exp(coef_mle_fre[1] - conf_val * std_error1),
+                     coef_mle_fre[2] - conf_val * std_error2, 
+                     coef_mle_fre[3] - conf_val * std_error3 )
+          
+          
+          table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
+                                     MLE = format(MLE, scientific = T),
+                                     se = format( SE, scientific = T),
+                                     Upper=format(upper, scientific = T),
+                                     Lower=format(lower, scientific = T))
+          
+          
+        } #end of zeros == "No"
+      } ## end of Freundlich
+      
+      
+      
+      
+      
+      if( input$down_dataset == "Summary" ){
+        data <- table_result
+      } else {
+        data <- trajectory_result
+      }
+      
+      data
+    }, bordered = T)
+
+    
+    
+    
+    # Downloadable csv of selected dataset ----
+
+data_down_reactive <- reactive({
+  value <- inputVar()
+  
+  file <- input$file1
+  ext <- tools::file_ext(file$datapath)
+  validate(need(ext == "csv", "Please upload a csv file"))
+  
+  req(input$file1)
+  
+  user_data <- read.csv(input$file1$datapath,
+                        # header = input$header,
+                        # sep = input$sep,
+                        # quote = input$quote)
+                        header = input$header == "Yes",
+                        sep = input$sep,
+                        quote = input$quote)
+  
+  colnames(user_data) <- c("Cw.mol.l", "q.mol.kg")
+  n_user_data <- dim(user_data)[1]
+  
+  
+  if(input$user_model == "Langmuir"){
+    
+    if( input$zeros == "Yes" ){
+      #### Langmuir
+      ### 1. initial values
+      Y_trans <-  (1 / user_data[-1,2] )
+      X_trans <- (1 / user_data[-1,1] )
+      
+      data_trans <- data.frame(q.mol.kg = Y_trans, 
+                               Cw.mol.l = X_trans)
+      
+      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+      coef_lm <- fit_lm$coefficients
+      Q_est_lm <- 1 / coef_lm[1]
+      K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+      
+      x_vals <- (0:100)/100*max( user_data[,1] )
+      
+      # Compute mse
+      fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+      res_lm <- user_data[-1,2] - 1/fitted_values_lm
+      mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+      
+      
+      ### 2. MLE
+      # 2-1 initial values from the previous linear model
+      sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                              sqrt(sigma2_initial))
+      
+      
+      # 2-2 fit a new model of reparameterization for Kd
+      if(input$user_Rfunction == "optim"){
+        fit_mle <- optim(fn = negLogLikelihood,
+                         par = initial_value_mle,
+                         hessian = T,
+                         method = input$user_method,
+                         data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        coef_mle <- fit_mle$par
+        
+      } else if( input$user_Rfunction == "nlm"){
+        fit_mle <- nlm(f = negLogLikelihood,
+                       p = initial_value_mle,
+                       hessian = T,
+                       data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        
+        coef_mle <- fit_mle$estimate
+        
+      }
+      
+      # 2-3 get estimates
+      Q_est_mle <- coef_mle[1]
+      K_est_mle <- exp( coef_mle[2] )
+      sigma_est_mle <- coef_mle[3]
+      
+      # 2-4 prepare for plotting
+      
+      Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+      res_mle <- user_data[,2] - Y_original_pred_mle
+      mse_3 <- (sum(res_mle^(2)) ) / (n_user_data  )
+      # compute mse
+      
+      
+      fitted_values_mle <-  ( coef_mle[1] * exp(coef_mle[2]) *  x_vals) / (1 + exp(coef_mle[2]) * x_vals)
+      # fitted values based on mle for plotting 
+      
+      
+      # 2-5 MLE Confidence band 
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if(input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      Cov_est <- solve(fit_mle$hessian)
+      c_pred_vec <- x_vals
+      
+      mle_band_upper <- rep(NA, length(c_pred_vec))
+      mle_band_lower <- rep(NA, length(c_pred_vec))
+      
+      for(i in 1:length(c_pred_vec)){
+        c_now <- c_pred_vec[i]
+        se_est <- se_for_CI_mle(Q = Q_est_mle, K_new=coef_mle[2], C=c_now,
+                                sigma = sigma_est_mle, cov_mat=Cov_est)
+        
+        term <- conf_val * se_est
+        mle_band_upper[i] <- fitted_values_mle[i] + term
+        mle_band_lower[i] <- fitted_values_mle[i] - term
+      }
+      
+      
+      fitted_values <- fitted_values_mle
+      upper_bound <- mle_band_upper
+      lower_bound <- mle_band_lower
+      
+      
+      trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                      "upper_bound"=upper_bound,
+                                      "lower_bound"=lower_bound)
+      
+      
+      ### MLE Table
+      Q_est_mle <- coef_mle[1]
+      K_est_mle <- exp( coef_mle[2] )
+      sigma_est_mle <- coef_mle[3]
+      
+      
+      Cov_est <- solve(fit_mle$hessian)
+      std_error1 <- sqrt(Cov_est[1,1]  )
+      std_error2 <- sqrt(Cov_est[2,2]  )
+      std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle[2]))^(2) )
+      std_error3 <- sqrt(Cov_est[3,3]  )
+      
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if (input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      MLE <- c(coef_mle[1], coef_mle[2], exp(coef_mle[2]), coef_mle[3])
+      SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3)
+      upper <- c(coef_mle[1] + conf_val * std_error1,
+                 coef_mle[2] + conf_val * std_error2, 
+                 exp(coef_mle[2] + conf_val * std_error2),
+                 # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
+                 coef_mle[3] + conf_val * std_error3 )
+      lower <- c(coef_mle[1] - conf_val * std_error1,
+                 coef_mle[2] - conf_val * std_error2, 
+                 exp(coef_mle[2] - conf_val * std_error2),
+                 # exp(coef_mle[2]) - conf_val * std_error2_delta_method, 
+                 coef_mle[3] - conf_val * std_error3 )
+      
+      
+      
+      table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+      
+      
+      
+    } else {
+      
+      ### 1. initial values
+      Y_trans <-  (1 / user_data[,2] )
+      X_trans <- (1 / user_data[,1] )
+      
+      data_trans <- data.frame(q.mol.kg = Y_trans, 
+                               Cw.mol.l = X_trans)
+      
+      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+      coef_lm <- fit_lm$coefficients
+      Q_est_lm <- 1 / coef_lm[1]
+      K_est_lm <- ( coef_lm[1] / coef_lm[2] ) 
+      
+      x_vals <- (0:100)/100*max( user_data[,1] )
+      
+      # Compute mse
+      fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[ ,1]
+      res_lm <- user_data[ ,2] - 1/fitted_values_lm
+      mse_2 <- (sum(res_lm^(2)) ) / (n_user_data  )
+      
+      
+      ### 2. MLE
+      # 2-1 initial values from the previous linear model
+      sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+      initial_value_mle <- c( 1/coef_lm[1], log( coef_lm[1] / coef_lm[2]), 
+                              sqrt(sigma2_initial))
+      
+      
+      # 2-2 fit a new model of reparameterization for Kd
+      if( input$user_Rfunction == "optim"){
+        fit_mle <- optim(fn = negLogLikelihood,
+                         par = initial_value_mle,
+                         hessian = T,
+                         method = input$user_method,
+                         data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        coef_mle <- fit_mle$par
+        
+      } else if( input$user_Rfunction == "nlm"){
+        fit_mle <- nlm(f = negLogLikelihood,
+                       p = initial_value_mle,
+                       hessian = T,
+                       data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        
+        coef_mle <- fit_mle$estimate
+        
+      }
+      
+      # 2-3 get estimates
+      Q_est_mle <- coef_mle[1]
+      K_est_mle <- exp( coef_mle[2] )
+      sigma_est_mle <- coef_mle[3]
+      
+      # 2-4 prepare for plotting
+      
+      Y_original_pred_mle <- ( coef_mle[1] * exp(coef_mle[2]) * user_data[,1] ) / (1 + exp(coef_mle[2]) * user_data[,1])
+      res_mle <- user_data[,2] - Y_original_pred_mle
+      mse_3 <- (sum(res_mle^(2)) ) / (n_user_data  )
+      # compute mse
+      
+      
+      fitted_values_mle <-  ( coef_mle[1] * exp(coef_mle[2]) *  x_vals) / (1 + exp(coef_mle[2]) * x_vals)
+      # fitted values based on mle for plotting 
+      
+      
+      # 2-5 MLE Confidence band 
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if(input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      Cov_est <- solve(fit_mle$hessian)
+      c_pred_vec <- x_vals
+      
+      mle_band_upper <- rep(NA, length(c_pred_vec))
+      mle_band_lower <- rep(NA, length(c_pred_vec))
+      
+      for(i in 1:length(c_pred_vec)){
+        c_now <- c_pred_vec[i]
+        se_est <- se_for_CI_mle(Q = Q_est_mle, K_new=coef_mle[2], C=c_now,
+                                sigma = sigma_est_mle, cov_mat=Cov_est)
+        
+        term <- conf_val * se_est
+        mle_band_upper[i] <- fitted_values_mle[i] + term
+        mle_band_lower[i] <- fitted_values_mle[i] - term
+      }
+      
+      
+      fitted_values <- fitted_values_mle
+      upper_bound <- mle_band_upper
+      lower_bound <- mle_band_lower
+      
+      trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                      "upper_bound"=upper_bound,
+                                      "lower_bound"=lower_bound)
+      
+      
+      ### MLE Table
+      Q_est_mle <- coef_mle[1]
+      K_est_mle <- exp( coef_mle[2] )
+      sigma_est_mle <- coef_mle[3]
+      
+      
+      Cov_est <- solve(fit_mle$hessian)
+      std_error1 <- sqrt(Cov_est[1,1]  )
+      std_error2 <- sqrt(Cov_est[2,2]  )
+      std_error2_delta_method <- sqrt(Cov_est[2,2] * (exp(coef_mle[2]))^(2) )
+      std_error3 <- sqrt(Cov_est[3,3]  )
+      
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if (input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      MLE <- c(coef_mle[1], coef_mle[2], exp(coef_mle[2]), coef_mle[3])
+      SE <- c(std_error1, std_error2, std_error2_delta_method, std_error3)
+      upper <- c(coef_mle[1] + conf_val * std_error1,
+                 coef_mle[2] + conf_val * std_error2, 
+                 exp(coef_mle[2] + conf_val * std_error2),
+                 # exp(coef_mle[2]) + conf_val * std_error2_delta_method,
+                 coef_mle[3] + conf_val * std_error3 )
+      lower <- c(coef_mle[1] - conf_val * std_error1,
+                 coef_mle[2] - conf_val * std_error2, 
+                 exp(coef_mle[2] - conf_val * std_error2),
+                 # exp(coef_mle[2]) - conf_val * std_error2_delta_method, 
+                 coef_mle[3] - conf_val * std_error3 )
+      
+      
+      
+      table_result <- data.frame(Par = c("Qmax", "K'd", "Kd", "sigma"),  MLE = format(MLE, scientific = T), se = format( SE, scientific = T),
+                                 Upper=format(upper, scientific = T), Lower=format(lower, scientific = T))
+      
+    } # end of zeors == "No"
+    
+  } ## end of Langmuir
+  else if( input$user_model == "Freundlich" ) {
+    if( input$zeros == "Yes"){
+      
+      ### Freundlich model
+      ## 1. initial values
+      Y_trans <-  log(user_data[-1,2] )
+      X_trans <- log(user_data[-1,1] )
+      
+      data_trans <- data.frame(q.mol.kg = Y_trans, 
+                               Cw.mol.l = X_trans)
+      
+      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+      coef_lm <- fit_lm$coefficients
+      fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[-1,1]
+      
+      K_F_est_lm <- exp( coef_lm[1] )
+      n_est_lm <- ( 1 / coef_lm[2] ) 
+      x_vals <- (0:100)/100*max( user_data[,1] )
+      
+      
+      res_lm <- user_data[-1,2] - exp(fitted_values_lm)
+      sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+      
+      
+      ## 2. MLE
+      initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+      
+      
+      # 2-1 fit a new model of reparameterization for Kd
+      if( input$user_Rfunction == "optim"){
+        fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                             par = initial_value_mle,
+                             hessian = T,
+                             method = input$user_method,
+                             data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        coef_mle_fre <- fit_mle_fre$par
+        
+      } else if( input$user_Rfunction == "nlm"){
+        fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                           p = initial_value_mle,
+                           hessian = T,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        
+        coef_mle_fre <- fit_mle_fre$estimate
+        
+      }
+      
+      # 2-3 get estimates
+      K_F_prime_est_mle_fre <- coef_mle_fre[1]
+      K_F_est_mle_fre <- exp(coef_mle_fre[1])
+      
+      n_est_mle_fre <- coef_mle_fre[2]
+      sigma_est_mle_fre <- coef_mle_fre[3]
+      
+      # 2-4 prepare for plotting
+      Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+      res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+      mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+      # compute mse
+      
+      
+      fitted_values_mle_fre <-   exp(coef_mle_fre[1]) *   x_vals^(1/coef_mle_fre[2])
+      # fitted values based on mle for plotting
+      
+      
+      # 2-5 MLE Confidence band
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if(input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      Cov_est_fre <- solve(fit_mle_fre$hessian)
+      c_pred_vec <- x_vals
+      
+      mle_band_upper_fre <- rep(NA, length(c_pred_vec))
+      mle_band_lower_fre <- rep(NA, length(c_pred_vec))
+      
+      for(i in 2:length(c_pred_vec)){
+        c_now <- c_pred_vec[i]
+        se_est <- se_for_CI_mle_fre_trans( K_F_prime = coef_mle_fre[1], n=coef_mle_fre[2], C=c_now, sigma = sigma_est_mle_fre, cov_mat=Cov_est_fre)
+        
+        term <- conf_val * se_est
+        mle_band_upper_fre[i] <- fitted_values_mle_fre[i] + term
+        mle_band_lower_fre[i] <- fitted_values_mle_fre[i] - term
+      }
+      
+      mle_band_upper_fre[1] <- 0
+      mle_band_lower_fre[1] <- 0
+      # since derivative[2] does not exist when C= 0
+      
+      fitted_values <- fitted_values_mle_fre
+      upper_bound <- mle_band_upper_fre
+      lower_bound <- mle_band_lower_fre
+      
+      
+      trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                      "upper_bound"=upper_bound,
+                                      "lower_bound"=lower_bound)
+      
+      #### MLE Table
+      K_F_prime_est_mle_fre <- coef_mle_fre[1]
+      K_F_est_mle_fre <- exp(coef_mle_fre[1])
+      
+      n_est_mle_fre <- coef_mle_fre[2]
+      sigma_est_mle <- coef_mle_fre[3]
+      
+      
+      Cov_est <- solve(fit_mle_fre$hessian)
+      std_error1 <- sqrt(Cov_est[1,1])
+      std_error1_delta_method <- sqrt(Cov_est[1,1] * (exp(coef_mle_fre[1]))^(2))
+      std_error2 <- sqrt(Cov_est[2,2])
+      std_error3 <- sqrt(Cov_est[3,3])
+      
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if (input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      MLE <- c(coef_mle_fre[1], exp(coef_mle_fre[1]), coef_mle_fre[2], coef_mle_fre[3])
+      SE <- c(std_error1, std_error1_delta_method,std_error2, std_error3)
+      upper <- c(coef_mle_fre[1] + conf_val * std_error1, 
+                 # exp(coef_mle_fre[1]) + conf_val * std_error1_delta_method,
+                 exp(coef_mle_fre[1] + conf_val * std_error1),
+                 coef_mle_fre[2] + conf_val * std_error2, 
+                 coef_mle_fre[3] + conf_val * std_error3 )
+      lower <- c(coef_mle_fre[1] - conf_val * std_error1, 
+                 # exp(coef_mle_fre[1]) - conf_val * std_error1_delta_method,
+                 exp(coef_mle_fre[1] - conf_val * std_error1),
+                 coef_mle_fre[2] - conf_val * std_error2, 
+                 coef_mle_fre[3] - conf_val * std_error3 )
+      
+      
+      table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
+                                 MLE = format(MLE, scientific = T),
+                                 se = format( SE, scientific = T),
+                                 Upper=format(upper, scientific = T),
+                                 Lower=format(lower, scientific = T))
+    } else {
+      
+      ### Freundlich model
+      ## 1. initial values
+      Y_trans <-  log(user_data[,2] )
+      X_trans <- log(user_data[,1] )
+      
+      data_trans <- data.frame(q.mol.kg = Y_trans, 
+                               Cw.mol.l = X_trans)
+      
+      fit_lm <- lm(q.mol.kg ~ . , data = data_trans)
+      coef_lm <- fit_lm$coefficients
+      fitted_values_lm <- coef_lm[1] + coef_lm[2] * user_data[,1]
+      
+      K_F_est_lm <- exp( coef_lm[1] )
+      n_est_lm <- ( 1 / coef_lm[2] ) 
+      x_vals <- (0:100)/100*max( user_data[,1] )
+      
+      
+      res_lm <- user_data[,2] - exp(fitted_values_lm)
+      sigma2_initial <- (sum(res_lm^(2)) ) / (n_user_data -1  )
+      
+      
+      ## 2. MLE
+      initial_value_mle <- c( log(K_F_est_lm), n_est_lm, sqrt(sigma2_initial))
+      
+      
+      # 2-1 fit a new model of reparameterization for Kd
+      if( input$user_Rfunction == "optim"){
+        fit_mle_fre <- optim(fn = negLogLikelihood_fre_trans,
+                             par = initial_value_mle,
+                             hessian = T,
+                             method = input$user_method,
+                             data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        coef_mle_fre <- fit_mle_fre$par
+        
+      } else if( input$user_Rfunction == "nlm"){
+        fit_mle_fre <- nlm(f = negLogLikelihood_fre_trans,
+                           p = initial_value_mle,
+                           hessian = T,
+                           data_x = user_data[,1] , data_y = user_data[,2]
+        )
+        
+        coef_mle_fre <- fit_mle_fre$estimate
+        
+      }
+      
+      # 2-3 get estimates
+      K_F_prime_est_mle_fre <- coef_mle_fre[1]
+      K_F_est_mle_fre <- exp(coef_mle_fre[1])
+      
+      n_est_mle_fre <- coef_mle_fre[2]
+      sigma_est_mle_fre <- coef_mle_fre[3]
+      
+      # 2-4 prepare for plotting
+      Y_original_pred_mle_fre <-  exp(coef_mle_fre[1]) * user_data[,1]^(1/coef_mle_fre[2])
+      res_mle_fre <- user_data[,2] - Y_original_pred_mle_fre
+      mse_fre <- (sum(res_mle_fre^(2)) ) / (n_user_data  )
+      # compute mse
+      
+      
+      fitted_values_mle_fre <-   exp(coef_mle_fre[1]) *   x_vals^(1/coef_mle_fre[2])
+      # fitted values based on mle for plotting
+      
+      
+      # 2-5 MLE Confidence band
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if(input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      Cov_est_fre <- solve(fit_mle_fre$hessian)
+      c_pred_vec <- x_vals
+      
+      mle_band_upper_fre <- rep(NA, length(c_pred_vec))
+      mle_band_lower_fre <- rep(NA, length(c_pred_vec))
+      
+      for(i in 2:length(c_pred_vec)){
+        c_now <- c_pred_vec[i]
+        se_est <- se_for_CI_mle_fre_trans( K_F_prime = coef_mle_fre[1], n=coef_mle_fre[2], C=c_now, sigma = sigma_est_mle_fre, cov_mat=Cov_est_fre)
+        
+        term <- conf_val * se_est
+        mle_band_upper_fre[i] <- fitted_values_mle_fre[i] + term
+        mle_band_lower_fre[i] <- fitted_values_mle_fre[i] - term
+      }
+      
+      mle_band_upper_fre[1] <- 0
+      mle_band_lower_fre[1] <- 0
+      # since derivative[2] does not exist when C= 0
+      
+      fitted_values <- fitted_values_mle_fre
+      upper_bound <- mle_band_upper_fre
+      lower_bound <- mle_band_lower_fre
+      
+      trajectory_result <- data.frame("fitted_values"=fitted_values,
+                                      "upper_bound"=upper_bound,
+                                      "lower_bound"=lower_bound)
+      
+      #### MLE Table
+      K_F_prime_est_mle_fre <- coef_mle_fre[1]
+      K_F_est_mle_fre <- exp(coef_mle_fre[1])
+      
+      n_est_mle_fre <- coef_mle_fre[2]
+      sigma_est_mle <- coef_mle_fre[3]
+      
+      
+      Cov_est <- solve(fit_mle_fre$hessian)
+      std_error1 <- sqrt(Cov_est[1,1])
+      std_error1_delta_method <- sqrt(Cov_est[1,1] * (exp(coef_mle_fre[1]))^(2))
+      std_error2 <- sqrt(Cov_est[2,2])
+      std_error3 <- sqrt(Cov_est[3,3])
+      
+      if( input$user_conf_level == "95%"){
+        conf_val <- qnorm(0.975)
+      } else if( input$user_conf_level == "90%"){
+        conf_val <- qnorm(0.95)
+      }  else if (input$user_conf_level == "80%"){
+        conf_val<- qnorm(0.90)
+      } else if (input$user_conf_level == "99%"){
+        conf_val<- qnorm(0.995)
+      }
+      
+      MLE <- c(coef_mle_fre[1], exp(coef_mle_fre[1]), coef_mle_fre[2], coef_mle_fre[3])
+      SE <- c(std_error1, std_error1_delta_method,std_error2, std_error3)
+      upper <- c(coef_mle_fre[1] + conf_val * std_error1, 
+                 # exp(coef_mle_fre[1]) + conf_val * std_error1_delta_method,
+                 exp(coef_mle_fre[1] + conf_val * std_error1),
+                 coef_mle_fre[2] + conf_val * std_error2, 
+                 coef_mle_fre[3] + conf_val * std_error3 )
+      lower <- c(coef_mle_fre[1] - conf_val * std_error1, 
+                 # exp(coef_mle_fre[1]) - conf_val * std_error1_delta_method,
+                 exp(coef_mle_fre[1] - conf_val * std_error1),
+                 coef_mle_fre[2] - conf_val * std_error2, 
+                 coef_mle_fre[3] - conf_val * std_error3 )
+      
+      
+      table_result <- data.frame(Par = c("K'_F", "K_F", "n", "sigma"),
+                                 MLE = format(MLE, scientific = T),
+                                 se = format( SE, scientific = T),
+                                 Upper=format(upper, scientific = T),
+                                 Lower=format(lower, scientific = T))
+      
+      
+    } #end of zeros == "No"
+  } ## end of Freundlich
+  
+  
+  
+  
+  
+  if( input$down_dataset == "Summary" ){
+    data <- table_result
+  } else {
+    data <- trajectory_result
+  }
+  
+  data
+})
+    
+    output$downloadData <- downloadHandler(
+      
+      filename = function() {
+        paste(input$user_model,"_" , input$down_dataset,".csv", sep = "")
+      },
+      content = function(file) {
+        write.csv(data_down_reactive(), file, row.names = FALSE)
+      }
+    )
+    
+    
+    output$downloadData_ex <- downloadHandler(
+      
+      filename = "example_data.csv",
+      content = function(file) {
+        file.copy('www/example_data.csv', file)
+      }
+    )
+
+
 } # end of server
 
 # Run the application 
