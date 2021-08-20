@@ -8,5 +8,8 @@ appId: 3572240
 bundleId: 4302418
 url: https://jgong9.shinyapps.io/chemistry_app/
 when: 1614900985.62373
+bundleId: 4943247
+url: https://jgong9.shinyapps.io/chemistry_app/
+when: 1629419092.69155
 asMultiple: FALSE
 asStatic: FALSE
