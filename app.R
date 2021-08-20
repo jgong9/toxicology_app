@@ -120,7 +120,8 @@ se_for_CI_mle_fre_trans <- function(K_F_prime, n, C, sigma, cov_mat){
 
 sidebar <- dashboardSidebar(
   sidebarMenu(id="tabs",
-              menuItem("Initial values", tabName="initial", icon=icon("file-text-o"), selected=T),
+              menuItem("Models", tabName = "models", icon=icon("equals"), selected = T),
+              menuItem("Initial values", tabName="initial", icon=icon("file-text-o"), selected=F),
               menuItem("Confidence envelopes", tabName = "conf", icon=icon("line-chart"), selected=F),
               menuItem("AIC", tabName = "aic", icon=icon("pencil"), selected=F)
             #  menuItem("Question", tabName = "ques", icon = icon("question"))
@@ -129,6 +130,36 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   tabItems(
+    tabItem(tabName = "models",
+            br(),
+            fluidRow(
+              column(
+                p(
+                  strong("1. Langmuir model"),
+                  br(),
+                  br(),
+                  "Suppose we observed \\(n\\) pairs of \\((C_{W,i}, q_{i})_{i=1,\\dots,n}\\) of isotherm curve. Then, our model is ",
+                  "$$q_{i} = \\frac{Q_{max} \\exp(K^{\\prime}_{d}) C_{W,i}}{ 1 + \\exp(K^{\\prime}_{d}) C_{i}} + \\varepsilon_{i},$$",
+                  "where \\(\\varepsilon_{i}\\) is a measurement error distributed with \\(N(0, \\sigma^{2})\\) and \\(K_{d}\\) is reparameterized with \\(K^{\\prime}_{d} = \\log(K_{d})\\). In order to estimate those three parameters, \\(Q_{max}\\), \\(K^{\\prime}_{d}\\), and \\(\\sigma^{2}\\), we use the maximum likelihood estimation method based the likelihood function given as ",
+                  "$$ L\\left( Q_{max}, K^{\\prime}_{d}, \\sigma^{2} \\right) = \\prod^{n}_{i=1} \\frac{1}{\\sqrt{2\\pi \\sigma^{2}}} \\exp \\left( -  \\frac{ \\left( q_{i} - \\frac{Q_{max} \\exp(K^{\\prime}_{d}) C_{W,i}}{ 1 + \\exp(K^{\\prime}_{d}) C_{W,i}} \\right)^{2} }{2\\sigma^{2}} \\right).$$",
+                  "The 3 estimators which maximize \\(L\\left( Q_{max}, K^{\\prime}_{d}, \\sigma^{2} \\right)\\) are our maximum likelihood estimators (MLE).",
+                  style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"
+                ),
+                br(),
+                p(
+                  strong("2. Freundlich model"),
+                  br(),
+                  br(),
+                  "Similarly, given the same N pairs of observations \\((C_{W,i}, q_{i})_{i=1,\\dots,N}\\), we assume that ",
+                  "$$ q_{i} = \\exp(K^{\\prime}_{F}) \\cdot C_{W,i}^{\\frac{1}{n}}+ \\varepsilon_{i},$$ ",
+                  "where \\(K_{F} = \\exp(K^{\\prime}_{F})\\) and the distribution of the measurement error \\( \\varepsilon_{i}\\) is \\(N(0, \\sigma^{2})\\). As we have shown for Langmuir model, we set the likelihood function as ",
+                  "$$ L\\left(K^{\\prime}_{F}, n, \\sigma^{2} \\right)=\\prod^{N}_{i=1} \\frac{1}{\\sqrt{2\\pi \\sigma^{2}}} \\exp \\left( - \\frac{ \\left( q_{i} - \\exp(K^{\\prime}_{F}) \\cdot C_{W,i}^{\\frac{1}{n}} \\right)^{2} }{2\\sigma^{2}} \\right),$$",
+                  "and then attain the MLE that maximizes \\(L\\left(K^{\\prime}_{F}, n, \\sigma^{2} \\right)\\)",
+                  style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"
+                ),
+                width=11),
+            ),
+    ), # end of tabItme 0
     tabItem(tabName = "initial",
               br(),
 
@@ -143,7 +174,7 @@ body <- dashboardBody(
                        \\(Q^{\\star}_{max} = Q_{max}^{-1}\\), \\(K^{\\star}_{d} = K_{d}^{-1}\\). Let \\(Y^{\\star}=q^{-1}\\) and \\(C^{\\star}_{W}= C^{-1}_{W}\\). Then, ",
                        br(),
                        br(),
-                       " \\( q = \\frac{Q_{max} K_{d} C_{W}}{1 + K_{d} C_{W}} \\Longleftrightarrow q = \\frac{Q_{max} C_{W}}{K_{d}^{\\star} +  C_{W}}\\)",
+                       "\\( q = \\frac{Q_{max} K_{d} C_{W}}{1 + K_{d} C_{W}} \\Longleftrightarrow q = \\frac{Q_{max} C_{W}}{K_{d}^{\\star} +  C_{W}}\\)",
                        br(),
                       "\\(\\Longrightarrow \\frac{1-q}{q} = \\frac{K_{d}^{\\star} + C_{W} - Q_{max}C_{W}}{Q_{max}C_{W}}\\)",
                       br(),
@@ -351,7 +382,7 @@ ui <- tagList(
                                 plotOutput("plot_fre"),
                                 withMathJax("For MLE, we assume \n
                                      $$ q = \\exp{K^{\\prime}_{F}} \\cdot C_{W}^{\\frac{1}{n}}+ \\varepsilon, $$
-                                     \n where \\(K_{F} = \\exp{K^{\\prime}_{F}}\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
+                                     \n where \\(K_{F} = \\exp(K^{\\prime}_{F})\\) and \\( \\varepsilon \\sim N(0, \\sigma^{2}) \\).
                                      \n"),
                                 br(),
                                 br(),

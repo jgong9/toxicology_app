@@ -5,8 +5,8 @@ account: jgong9
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3572240
-bundleId: 4532227
+bundleId: 4943247
 url: https://jgong9.shinyapps.io/chemistry_app/
-when: 1619647994.78012
+when: 1629419092.69155
 asMultiple: FALSE
 asStatic: FALSE
