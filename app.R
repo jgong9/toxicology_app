@@ -455,11 +455,18 @@ ui <- tagList(
                   
                   
                   column(
+                    h4(strong("Welcome")),
+                    p("This application is desinged to help fit two popular isotherm models. By uploading your data in ", strong("Do-it-yourself Tool", style="color:#3355FF"),", you can get the fitted model, confidence bands, plot, and estimation summary table. 
+                    The method we adopt for this app is the maximum likelihood estimation with delta method. Details can be found in ", strong("Method", style="color:#3355FF"), ". Example data and the result of estimation are available in ", strong("Plot",style="color:#3355FF"), " and ", strong("Data",style="color:#3355FF"), ". ",
+                      style="text-align:justify;color:black;background-color:#ffdad5;padding:15px;border-radius:10px"),
+                    br(),
+                    br(),
                     h4(strong("Isotherm Models")),
                     p( strong("1. Langmuir model"),
                        withMathJax("$$ q = \\frac{Q_{max} K_{d} C_{W}}{1+K_{d} C_{W} },$$"),
                        "where \\(q\\) is toxin absorbed (mol/kg), \\(Q_{max}\\) is the maximum capacity (mol/kg), \\(K_{d}\\) is a distribution constant, and \\(C_{W}\\) is the toxin equilibirum conncentration.",style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
                     br(),
+
                     
                     p( strong("2. Freundlich model"),
                        withMathJax("$$ q = K_{F} \\cdot C_{W}^{\\frac{1}{n}} $$"),
