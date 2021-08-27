@@ -456,7 +456,7 @@ ui <- tagList(
                   
                   column(
                     h4(strong("Welcome")),
-                    p("This application is desinged to help fit two popular isotherm models. By uploading your data in ", strong("Do-it-yourself Tool", style="color:#3355FF"),", you can get the fitted model, confidence bands, plot, and estimation summary table. 
+                    p("This application is desinged to help fitting two popular isotherm models. By uploading your data in ", strong("Do-it-yourself Tool", style="color:#3355FF"),", you can get the fitted model, confidence bands, plot, and estimation summary table. 
                     The method we adopt for this app is the maximum likelihood estimation with delta method. Details can be found in ", strong("Method", style="color:#3355FF"), ". Example data and the result of estimation are available in ", strong("Plot",style="color:#3355FF"), " and ", strong("Data",style="color:#3355FF"), ". ",
                       style="text-align:justify;color:black;background-color:#ffdad5;padding:15px;border-radius:10px"),
                     br(),
